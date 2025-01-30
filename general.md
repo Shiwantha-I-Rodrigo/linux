@@ -1,28 +1,28 @@
 # SERVICES
 
 2 types of services
-    background process > running always > daemon > often end with letter "d"
-    child process > spawned as a result of a request by a parent program
+    - background process , running always , daemon , often end with letter "d"
+    - child process , spawned as a result of a request by a parent program
 
-super servers > listen for user requests and spawn services accordingly
-    ie. "inetd" > internet daemon for Linux
-        "xinetd" > additional features (ACLs, schedule services, advanced loggin)
+super servers , listen for user requests and spawn services accordingly
+    - inetd , internet daemon for Linux
+    - xinetd , additional features (ACLs, schedule services, advanced loggin)
 
-ip > reach the server / port > reach the services
+> *ip , reach the server / port , reach the services*
 
-well known ports >>
-    - 20/21   = FTP > *file transfer protocol*
-    - 22      = SSH > *secure shell protocol*
-    - 23      = Telnet
-    - 25      = SMTP > *simple mail transport protocol*
-    - 53      = DNS > *dynamic name system*
-    - 67      = DHCP > *dynamic host configuration protocol*
-    - 80      = HTTP > *hypertext transfer protocol*
-    - 109>110 = POP > *post office protocol*
-    - 143/220 = IMAP > *internet message access protocol*
-    - 389     = LDAP > *lightweigth directory access protocol*
-    - 443     = HTTPS
-    - 2049    = NFS > *network file system*
+well known ports
+    - 20\./21   = FTP , *file transfer protocol*
+    - 22\.      = SSH , *secure shell protocol*
+    - 23\.      = Telnet
+    - 25\.      = SMTP , *simple mail transport protocol*
+    - 53\.      = DNS , *dynamic name system*
+    - 67\.      = DHCP , *dynamic host configuration protocol*
+    - 80\.      = HTTP , *hypertext transfer protocol*
+    - 109\.,110 = POP , *post office protocol*
+    - 143\./220 = IMAP , *internet message access protocol*
+    - 389\.     = LDAP , *lightweigth directory access protocol*
+    - 443\.     = HTTPS
+    - 2049\.    = NFS , *network file system*
 
 ## INTERNET SERVICES
 
@@ -34,7 +34,7 @@ well known ports >>
     - databse services
         + PostgreSQL server
         + MySQL server
-        + MongoDB server > NoSQL > dafault no security
+        + MongoDB server , NoSQL , dafault no security
 
     - email services
         + linux uses multiple small programs to handle email services
