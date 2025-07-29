@@ -47,21 +47,47 @@ the `egrep` tool can also be used when using extended regular expressions.
 
 ## printf
 
-`printf` is geared to format single lines of text. it can be combined with other commands.
+    $ printf "hello world"
+    hello world $
 
-`$ printf "%.2f\n" 27.3243`\
-prints **27.32**
+    $ printf "%s\n" "hello world"
+    hello world
+    $
 
-    %c  display first char
-    %d  display as decimal integer
-    %f  display as float
-    %s  display as string
+    $ printf "%s\n" "hello world" "welcome"
+    hello world
+    welcome
+    $
+
+    $ printf "%.1f\n" 255 0xff
+    255.0
+    255.0
+    $
+
+    $ printf "%03d\t" 25 0xff
+    025    255 $
+
+
+    %c  character
+    %d  decimal integer
+    %f  float
+    %s  string
+
     \f  form feed
     \n  new line
     \r  carriage return
     \t  horizontal tab
 
+> **echo** Vs **printf**\
+> echo can be problematic when it comes to escape characters and how it displays data.\
+> printf is generally more consistent and has better formatting options.
+
+    $ for i in $( seq 1 4 ); do printf "%03d\t" "$i"; done
+    001    002    003    004 $
+
 ## wc
+
+word count
 
     -l  --lines             line count.
     -w  --words             word count.
@@ -78,9 +104,9 @@ without any options the default result is **[lines] [words] [bytes] [file name]*
 
 # REDIRECTING INPUT / OUTPUT
 
-Linux treats every object as a file. including the output process displaying text on screen.\
+Linux treats every object as a file. including the output process displaying text on screen.
 
-when a file is opened a file descriptor is assigned to the opened file. it's a non negative integer.\
+when a file is opened a file descriptor is assigned to the opened file. it's a non negative integer.
 
 file descriptors
 + STDIN = 0
@@ -95,19 +121,20 @@ but it can be redirected with redirection operator ( > )
 `$ echo "hello world" > file1`
 
 > the ( > ) operator will overwrite the existing data !\
-
-use ( >> ) to append data.
+> use ( >> ) to append data.
 
 ## STDERR
 
-`$ grep -d skip hosts: /etc/* 2> err.txt`
-
 **2>** is used to redierect error outputs.
 
-use ( **&**> ) to redirect both STDOUT and STDERR.
+`$ grep -d skip hosts: /etc/* 2> err.txt`
 
-to remove and throw away error messages redirect to /dev/null
+> to redirect both STDOUT and STDERR use any of the following formats.\
+> **&>**\
+> **>&**\
+> **> outputfile 2>&1**
 
+to throw away error messages redirect to /dev/null\
 `$ grep -d skip hosts: /etc/* 2> /dev/null`
 
 ## STDIN
@@ -171,9 +198,21 @@ it is usefull when installing software while saving a log and viewing what is ha
 
 ## xargs
 
-`$ find tmp -size 0 | xargs -p /usr/bin/rm`
+When piping without **xargs**, the actual data is fed into the next command.\
+when piping with **xargs**, the actual data is viewed as a parameter to the next command.
 
-similar to just using the `rm` command, but ask for confirmation before deletion.
+    $ cat file
+    hello world
+
+    $ ls | grep hello
+    $
+
+    $ ls | xargs grep hello
+    hello world
+    $
+
+> the first example is equalent to **grep "hello" <<< "file"** where file is data.\
+> the second is **grep "hello" file** where file is an argument.
 
 ## shell expansion
 
@@ -185,13 +224,20 @@ similar to just using the `rm` command, but ask for confirmation before deletion
 
 ## brace expansion
 
-`$ rm /tmp/emptyfile{1,2,3}.txt`
-
+`$ rm /tmp/emptyfile{1,2,3}.txt`\
 use one line instead of 3 lines.
 
 # EDITING TEXT FILES
 
 ## nano
+
+    Ctrl + O        Save A File
+    Ctrl + X        Exit file, with prompt
+    Alt + U         Undo an action
+    Ctrl + Space    Move one word forward
+    Alt + Space     Move one word backward
+    Ctrl + V        Move to next page
+    Ctrl + Y        Return to the preceding page
 
 ## vim
 
@@ -241,37 +287,82 @@ vim has 3 modes,
 
 ### sed
 
-    $ cat mytext
-        michael likes cake a lot of cake.
-        ron loves cake.
+    $ cat file
+        tik tok tik tok
+        tik tok
+        tik
 
-    $ sed 's/cake/donut/' mytext
-        michael likes donut a lot of cake.
-        ron loves donut.
-    
-    $ sed 's/cake/donut/g' mytext
-        michael likes donut a lot of donut.
-        ron loves donut.
-    
-    $ sed -e 's/cake/donut/g : s/likes/loves/' mytext
-        michael loves donut a lot of donut.
-        ron loves donut.
-    
-use **g** to substitute all occurences on a single line.\
-use **-e / --expression=** option to add multiple scripts.
+    # (p) print lines in addition to default print behavior.
+    $ sed 'p' file
+        tik tok tik tok
+        tik tok tik tok
+        tik tok
+        tik tok
+        tik
+        tik
+
+    # (-n) to suppress default print behavior.
+    $ sed -n 'p' file
+        tik tok tik tok
+        tik tok
+        tik
+
+    # (1,2p) print lines 1 to 2.
+    $ sed -n '1,2p' file
+        tik tok tik tok
+        tik tok
+
+    # (1~2p) print every other line.
+    $ sed -n '1~2p' file
+        tik tok tik tok
+        tik
+
+    # (1~2d) delete every other line.
+    $ sed '1~2d' file
+        tik tok
+
+    # (s) substitute first occurence.
+    $ sed 's/tok/tik/' file
+        tik tik tik tok
+        tik tik
+        tik
+
+    # (g) sustitute all.
+    $ sed 's/tok/tik/g' file
+        tik tik tik tik
+        tik tik 
+        tik
+
+    # ( -e / ; ) multiple expressions.
+    $ sed -e 's/tok/tik/g' -e 's/tik/tok/g' file
+    $ sed 's/tok/tik/g ; s/tik/tok/g' file
+
+        tok tok tok tok
+        tok tok
+        tok
+
+    # (-r) regex.
+    $ sed -r 's/^ti\w+/Tak/g' file
+        tak tok tik tok
+        tak tok
+        tak
+
+.
 
     $ cat script.sed
-        s/cake/donut/g
-        s/like/love
+        s/tik/tok
     
+    # (-f) use script file. 
     $ sed -f script.sed mytext
-        michael loves donuts a lot of donuts.
-        ron loves donuts.
-
-**-f / --file=** option to use a file instead of typing the script.
-**-r / --regexp-extended** option to add regex.
+        tok tok tik tok
+        tok tok
+        tok
 
 ### gawk
+
+gawk is the GNU implementation of the Awk programming language.
+
+> **awk** program just softlinks to **gawk**
 
 gawk can,
 + define variables and store data.
@@ -279,33 +370,108 @@ gawk can,
 + use programming structures (ie.loops).
 + create formatted reports from data.
 
-> **awk** program just softlinks to **gawk**
+Basic Usage,
 
-    $ gawk '{print $0}' mytext
-        michael likes cake a lot of cake.
-        ron loves cake.
-    
-    $ gawk '{print $1}' mytext
-        michael
-        ron
+    user input  : $ awk 'pattern { action }'
+    file        : $ awk 'pattern { action }' file
+    piped input : $ ls | awk 'pattern { action }'
 
-$0 = whole line\
-$1 = 1st field\
-$n = nth field
+    -F  --field-seperator       specify field seperator     -F: 
+    -f  --file=                 script file                 -f script.gawk file
+    -v                          pass variable               -v a="hello" -v b="$0"
 
-    $ gawk '{if ($3=="cake") {$3="donut"; print $0}}' mytext
-        michael likes donut a lot of cake.
-        ron loves donut.
+Built-In Variables
 
-**-F d / --field-seperator d** to specift field seperator.\
-**-f file / --file=file** to specift a script file.\
-**-s / --sandbox** to execute sandbox.
+    NR  : Keeps a running count of the number of input lines
+    NF  : Keeps a count of the number of fields in the current input record
+    FS  : Holds the field separator character
+    $0  : whole record.
+    $1  : 1st field.
+    $n  : nth field.
 
-    $ cat script.gawk
-        {if ($3=="cake")
-            {$3="donut"; print $0}
-        else if ($7=="cake")
-            {$7="fruits"}
+> match **every record** is the default pattern.\
+> **print $0** is the default action.\
+> one block can be ommited but not both.
+
+PATTERN BLOCK
+
+    # print any record with 'tak' in it.
+    $ awk '/tak/ { print $0 }' file
+    tik tok tak
+    tok tak tik
+    ...
+
+    # print any record with 'tak' or 'tuk' in it.
+    $ awk '/tak|tuk/ { print $0 }' file
+    tik tok tuk
+    tok tak tek
+    ...
+
+    # print any record with the first field longer than 2 characters.
+    $ awk 'length($1) > 2 { print $0 }' file
+    tik tok tak
+    tok tak tik
+    ...
+
+    # print any record with a value greater than or equal to 80 in 2nd field.
+    $ awk '$2 >= 80 { print $0 }
+    timmy 86 pass
+    cammi 80 pass
+    ken   96 pass
+    ...
+
+OPERATORS
+
+    &&  : AND   /a/ && /b/
+    ||  : OR    /a/ || /b/
+    !   : NOT   !/a/
+
+    x < y : x <= y : x > y : x >= y	: x == y : x != y
+    x ~ y	True if the string x matches the regexp denoted by y 
+    x !~ y	True if the string x does not match the regexp denoted by y
+
+BEGIN and END
+
+    # the BEGIN block executes only once and before all other rules.
+    # the END block executes only once after program read all the input reccords.
+
+    awk 'BEGIN { print "records with a vowel count" ; } /a|e|i|o|u/ { counter+=1 ; } END { printf "%s\n", counter ; }' file
+
+ACTION BLOCK
+
+    # if the 3rd field is 'tak', replace the first field with 'tuk' and print the record.
+    $ awk '{if ($3=="tak") {$1="tuk"; print $0}}' file
+    tuk tok tak
+    ...
+
+> when the program is becomming too complex put it in a file.
+
+    $ cat palindrome.gawk
+
+        {
+            if (length($0) == 1) {next}
+
+            rev = reverse($0)
+
+            if ($0 == rev) {
+                print
+                n++
+            }
         }
 
-    $ gawk -f script.gawk mytext
+        END {
+
+            printf "There are %d palindromes\n", n
+        }
+
+        function reverse(word) {
+            r = ""
+
+            for (i=length(word); i!=0; i--) {
+                r = r substr(word, i, 1)
+            }
+
+            return r
+        }
+    
+    $ awk -f palindrome.gawk file
