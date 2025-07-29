@@ -245,17 +245,23 @@ use `more` / `less` utilities to read text formatted as pages.\
 .
 
     $ diff text1 text2
-        2,4 c 2,4
+
+        1d0
+        < lear
+
+        1a3
+        > amal
+
+        2,4c2,4
         < teed
         < eu546n
         ---
         > town
         > stration
 
-        5 c 5
-        < all the kings men
-        ---
-        > its bitsy spider
+- delete the **1st** line from main file (text1).
+- add after **1st** line (as the 2nd line) to main file (text1) the **3rd** line from other file (text2).
+- change lines **2 and 4** of main file (text1) to match **2 and 4** of other file (text2).
 
 > in case of need for additon or deletion, instead of **c** an **a** or **d** is shown.
 
