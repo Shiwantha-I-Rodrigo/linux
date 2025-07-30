@@ -36,10 +36,14 @@ insted of the first sector , a full partiiton (EFI system partition) is allocate
 
 each bootloader file must be registered in the bootmanager for it to appear in the boot menu.
 
+> doesn't have a fixed extention for efi files, but **.efi** is preffered.\
+> stored in **/boot/efi/**.
+
 ## BOOTLOADER START
 
 ### LILO (Linux Loader)
 
+The first linux bootloader.\
 doesn't support UEFI\
 config fie located at /etc/lilo.conf
 
@@ -116,8 +120,8 @@ config file > /boot/grub/***grub.cfg***
 > GRUB2 numbering starts at **1 instead of 0 only for partitions**.\
 >
 > do not modify grub config file manually.\
-> use /etc/grub.d/*** for individual boot options (seperate files).\
-> use /etc/default/grub for global commands.
+> use ***/etc/grub.d/*** for individual boot options (seperate files).\
+> use ***/etc/default/grub*** for global commands.
 
 linux create new grub config files after certain events.\
 use `grub2-mkconfig -o /boot/grub2/grub.cfg` to create the grub configuration.( **-o** redirect output to file instead of STDOUT).
