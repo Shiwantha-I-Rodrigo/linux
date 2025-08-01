@@ -1,9 +1,9 @@
 # STARTUP AND SERVICES
 
-## init
+# init
 
-+ can be located in /etc /bin or /sbin.
-+ typically has **pid 1**.
++ can be located in ***/etc/ /bin/ or /sbin/***.
++ typically has *pid 1*.
 + parent process for every service.
 + `pstree -p 1` to view the process tree of 1.
 
@@ -15,222 +15,354 @@
     $ readlink -f /sbin/init
     /usr/lib/systemd/systemd
 
-    -----------------------------------
+    # system is using systemd
 
-    $ ps -p 1\
-    PID     TTY     TIME        CMD
-    1       ?       00:00:06    systemd
 
-### systemd
+## systemd
 
-> a **unit** in systemd defines a service. group of services or an action.\
-> systemd conf at */etc/systemd/system.conf*
-
-`$ systemctl list-units ` < list units >
-
-* 12 unit types,
-    + automount
-    + device
-    + mount
-    + path
-    + scope
-    + service
-    + slice
-    + snapshot
-    + socket
-    + swap
-    + target
-    + timer
-
-> groups of services are started via .target unit files.\
-> **default.target** is responsible for launching all the required services at system initialization.
-
-    $ find / -name default.target 2>/dev/null
-    /usr/lib/systemd/system/default.target
-
-    $ readlink -f /usr/lib/systemd/system/default.target
-    /usr/lib/systemd/system/graphical.target
-
-    -----------------------------------------------------
-
-    $ systemctl get-default
-    graphical.target
-
-+ graphical.target > user access + GUI
-+ multi-user.target > user access
-+ network-online.target > runs after establishing a network connection
-+ runlevel1.target > backward compatibility for SysV init system (1-5)
-
-> service unit files contain configuration information to start a service.
+> A **unit** in systemd defines a service, group of services or an action.
 
 priority order when two unit files have same name,
 
-1. /etc/systemd/system
+1. /etc/systemd/system (Highest) (**update proof**)
 2. /run/systemd/system
-3. /usr/lib/systemd/system
+3. /usr/lib/systemd/system (Lowest)
 
-`$ systemctl list-unit-files ` < list unit files >
+`$ systemctl list-units`\
+< list already loaded units >
 
-there are around 12 diffrent enablement statuses, however most used are.
+`$ systemctl list-unit-files `\
+< list all unit files >
 
-- enabled : start at boot.
-- disabled : does not start at boot.
-- static : starts if another unit depends on it. can be manually started.
+**Unit Files**
 
-.
+| Extension         | Purpose|
+|-                  |-|
+| **.service**      | Define how a daemon or a background process should be managed|
+|                   | What executable to Start, stop, reload, enable, disable (with what arguments)|
+|                   | When (on boot)(other service start)(etc.)|
+|                   | How to manage (restart on failure)(check dependencies)(limit restarts)(etc.)|
+|                   | Under what conditions (networking is up)(etc.)|
+| **.socket**       | Define socket-based activation for services, saves resources|
+|                   | Systemd listens on a socket and start the relevent service when a connection is made|
+|                   | **Activtes service of the same name, unless *Service=* option is set**|
+| **.target**       | Group and coordinate other unit files to achieve a common goal|
+|                   | Boot into a specific system mode by killing / starting units as defined|
+|                   | **graphical.target** - multiuser + GUI|
+|                   | **multi-user.target** - multiuser|
+|                   | **rescue.target** - singleuser(root) + all local filesystems + no networking|
+|                   | **emergency.target** - singleuser(root) + root filesystem + no networking|
+|                   | **reboot.target** - reboot system|
+|                   | **poweroff.target** - shutdown system|
+|                   | **halt.target** - halt system immediately|
+|                   | Kill / start multiple services together by making a custom target (gaming.target)|
+| **.timer**        | Schedule tasks based on events or date-time similar to cron|
+|                   | **Activtes service of the same name, unless *Unit=* option is set**|
+| **.mount**        | Define the mounting options of each file system|
+|                   | Systemd-native replacement for traditional entries in /etc/fstab|
+|                   | Systemd auto-generate .mount files for fstab entries|
+|                   | Enable easy control of filesystems (`$ systemctl start my-mount.mount`)|
+|                   | Dependency handling (after=network.target for NFS)|
+|                   | **Naming rule : */home/user/share/ --> home-user-share.mount***|
+| **.automount**    | Automatically mount / unmount a filesystem on-demand|
+|                   | Systemd triggers `home-user-share.mount` if user accessed `/home/user/share/`|
+|                   | Automatically unmount after a specific idle seconds|
+|                   | Improves boot speed and saves resources|
+|                   | .automount must have a .mount file of the same name|
+|                   | **Naming rule : */home/user/share/ --> home-user-share.automount***|
+| **.path**         | Define event-based(file system) activation for services|
+|                   | Monitor a file / directory and trigger a service when a change occurs|
+|                   | **Activtes service of the same name, unless *Unit=* option is set**|
+| **.device**       | Auto-generated by systemd when the device becomes availabe|
+|                   | The unit file itself does not trigger any unit by becoming availabe|
+|                   | But the device file can referenced on another unit to trigger itself|
+|                   | Ie. auto-mount when the device become availabe|
+|                   | **Naming rule : */dev/sda1 --> dev-sda1.device***|
+| **.swap**         | Define the mounting options of swap file systems, similar to **.mount** unit files|
+|                   | see **.mount** unit file|
+| **.slice**        | Define resource management for groups of processes using Linux control groups (cgroups)|
+|                   | **system.slice** - system services|
+|                   | **user.slice** - user sessions|
+|                   | **init.slice** - PID 1 and early boot processes|
+|                   | Limit resources for certain processes|
+| **.scope**        | Define management of externally started processes (not launched by systemd)|
+|                   | Place external processes into control groups (cgroups)|
+|                   | Auto-generated by tools such as|
+|                   | **loginctl** - user sessions|
+|                   | **systemd-run** - manual processes|
+|                   | **machinectl** - virtual machines or containers|
+|                   | **desktop-environments**|
+| **.snapshot**     | Capture the current state of the system’s active units |
+|                   | Restore the system to a previous state without rebooting or manually restarting services|
 
-    $ systemctl cat cron.service
-    /usr/lib/systemd/system/cron.service
+**Enablement Stasuses of a Unit File**
 
-    [unit]
-    Description = ... description.
-    Documentation = ... URI to documentation.
-    Wants = ... x is required to start this unit, this unit sratrs even x fails.
-    After = ... start this unit after x.
-    Before = ... start this unit before x.
-    Conflicts = ... do not start with x.
-    Requires = ... x is required to start this unit.
+| Status                                | Description|
+|-                                      |-|
+| **enabled**                           | The unit will be started automatically at boot|
+| **disabled**                          | The unit will **not** be started at boot, but can be started manually|
+| **static**                            | The unit has no **[Install]** section and cannot be enabled directly|
+|                                       | It is meant to be pulled in by other units|
+| **indirect**                          | The unit is not enabled directly by the user|
+|                                       | but is enabled as a dependency of another unit|
+| **masked**                            | The unit is completely blocked|
+|                                       | even manual starts are blocked (symlinked to **/dev/null**)|
+| **generated**                         | The unit file was dynamically generated,Not manually manageable|
+| **transient**                         | The unit was created at runtime. No persistence|
+| **static (vendor preset: enabled)**   | The unit is static but would be enabled by default if it had install instructions|
+| **enabled-runtime**                   | The unit is enabled for this boot session only|
+| **disabled-runtime**                  | Explicitly disabled for this boot session only|
+| **masked-runtime**                    | Temporarily masked for this boot session only|
 
+
+### systemctl
+
+
+***Manage Units : `systemctl [option] [unit]`***
+
+| Option                    | Description|
+|-                          |-|
+| **disable** / **enable**  | start or do not start at boot|
+| **start**                 | start units|
+| **status**                | display units current status|
+|                           | loaded : unit file name and path + enablement status|
+|                           | active : is the unit running|
+| **stop**                  | stop units|
+| **restart**               | restart / start the units|
+| **mask**                  | prevent unit from starting manually or at restart|
+|                           | `--now` to immediately enforce|
+|                           | `--running` to enforce only unitll next reboot|
+|                           | link service to dev/null|
+| **unmask**                | undo mask|
+| **reload**                | running service reloads its **configuration** without stopping/restarting it|
+| **daemon-reload**         | systemd manager **reload unit files from disk**|
+|                           | just makes systemd aware of changes to unit file|
+| **is-active**             | display active / failed|
+| **is-enabled**            | display enabled / disabled|
+| **is-failed**             | display active / failed|
+
+
+***System Opertional Status : `$ systemctl is-system-running`***
+
+| Status                    | Description|
+|-                          |-|
+| **running**               |system fully working|
+| **degraded**              |system has failed units|
+| **maintenance**           |system in emergency / recovery mode|
+| **initializing**          |system is starting to boot|
+| **starting**              |system is booting|
+| **stopping**              |system is starting to shut down|
+
+
+***Analyze Units : `$ systemd-analyze [option]`***
+
+| Option                    | Description|
+|-                          |-|
+| **blame**                 | list each running unit with time taken to initialize. sorted slowest to fastest|
+| **time**                  | display time spent on kernal, ramfs, user-space to initialize|
+| **critical-chain**        | display time critical units in a tree format|
+| **dump**                  | display info about all units|
+| **verify**                | scan the unit files for errors, follows directory location precedence|
+|                           | can accept a unit file name as an argument|
+
+
+***Other Tools***
+
+`$ systemctl --failed`\
+< display a list of failed units >
+
+`$ systemctl get-default`\
+< display systems default target >
+
+`$ systemctl set-default`\
+< set system default target >
+
+`$ systemctl isolate graphical.target` - **.target** is optional.\
+< stop un-nessesery units and start any additional required units for graphical.target>\
+! In grub2 menu targets can be set manually.\
+! Press 'e' to edit the entry and add **systemd.unit=rescue.target** to the *linux* line.
+
+
+> ***default.target***
+>
+> responsible for launching all the required services at system initialization.
+>
+>     $ find / -name default.target 2>/dev/null
+>     /usr/lib/systemd/system/default.target
+>
+>     $ readlink -f /usr/lib/systemd/system/default.target
+>     /usr/lib/systemd/system/graphical.target
+>
+>     -----------------------------------------------------
+>
+>     $ systemctl get-default
+>     graphical.target
+
+
+### UNIT FILE STRUCTURE
+
+    [Unit]
+    
+    # UNIT SPECIFIC SECTIONS
     [Service]
-    EnvironmentFile = ...file containing environmental variable substitutes.
-    Environment = ... environmental variable substitutes.
-    Type = ... startup type.
-                forking - ExecStart starts a parent process, which creates service process as a child and exit.
-                simple - Execstart starts service process.
-                oneshot - Execstart start service process,and then process exit.
-                idle - ExecStart start service process, wait until other start jobs are finished, then exit.
-    ExcecStart = ... script or command to run when unit starts.
-    ExcecStop = ... script or command to run when unit stops.
-    ExcecReload = ... script or command to run when unit reloads.
-    RemainAfterExit = ... if set to yes, remain active even after process started by ExecStart terminates.
-    Restart = ... service is restarted when process started by ExecStart terminates.
-                    ignored if systemctl restart or stop is issued.
-                    (no, on-success, on-failure, on-abnormal, on-watchdog, always)
+    [Mount]
+    [Automount]
+    [Timer]
+    [etc...]
 
     [Install]
-    Alias = ... additional name that can be used with systemctl
-    Also = ... additional units that must be enabled or disabled for this service.
-    WantedBy = ... which target unit manages this service.
-    RequiredBy = ... which target units require this service.
 
 
-> when modifying unit files always *copy* the file to **/etc/systemd/system/** directory first ,\
-> it will take procedence over other locations and will be protected from software updates.
+***[Unit]***
 
-#### systemctl
-
-`$ systemctl status cron` < check status of a service >
-
-+ loaded : unit file name and path + enabled or disabled for boot startup.
-+ active : is the unit running.
-
-.
-
-    disable / enable    start or do not start at boot.
-    start               start units.
-    status              display units current status.
-    stop                stop units.
-    restart             restart / start the units.
-    mask                prevent unit from starting manually or at restart.
-                        --now to immediately enforce.
-                        --running to enforce only unitll next reboot.
-                        link service to dev/null
-    unmask              undo mask
-    reload              load service config file of running unit to make
-                        service configuration changes without stopping the service.
-    daemon-reload       load unit config file of the running unit to make
-                        unit file configuration changes without stopping the service.
-    
-    is-active           display active / failed
-    is-enabled          display enabled / disabled
-    is-failed           display active / failed
+Metadata and dependency controls
+| Option            | Description |
+|-                  |-|
+| Description=      | One-line human-readable description of the unit|
+| Documentation=    | List of URIs, for documentation|
+| Requires=         | X is required to start this unit|
+| Wants=            | X is required but, this unit starts even X fails|
+| Before=           | Start this unit before starting X (not a dependency)|
+| After=            | Start this unit after starting X (not a dependency)|
+| Conflicts=        | If X is running, this unit will be stopped (and vice versa)|
+| BindsTo=          | X is required to start this unit, if X stops for any reason, this unit stops|
 
 
-`$ systemctl is-system-running` < determine systems opertional status >
+***[Install]***
 
-    running         system fully working.
-    degraded        system has failed units.
-    maintenance     system in emergency / recovery mode.
-    initializing    system is starting to boot.
-    starting        system is booting.
-    stopping        system is starting to shut down.
-
-`$ systemctl --failed` < display a list of failed units >
-
-`$ systemctl get-default` < display systems default target >
-
-`$ systemctl set-default` < set system default target >
-
-`$ systemctl isolate graphical.target` < stop all services started by all other targets >
-used to jump to various system modes.\
-    **graphical** - standard system with GUI\
-    **multi-user** - standard system with CLI\
-    **rescue** - load all local filesystems, only root access, no networking, system in maintenance mode.\
-    **emergency** - load only root filesystem, only root access, no networking, system in maintenace mode.\
-    **reboot** - reboot system.\
-    **poweroff** - shutdown system.\
-    **halt** - halt system immediately.
-
-> **.target** is optional for systemd targets.
-
-> in grub2 menu targets can be set manually. press 'e' to edit the entry and add **systemd.unit=rescue.target** to the *linux* line.
-
-`$ systemd-analyze *option*`
-
-    blame           list each running unit with time taken to initialize. sorted slowest to fastest.
-    time            display time spent on kernal, ramfs, user-space to initialize.
-    critical-chain  display time critical units in a tree format.
-    dump            display info about all units.
-    verify          scan the unit files for errors, follows directory location precedence.
-                    can accept a unit file name as an argument.
+Enabling / Disabling behavior
+| Option            | Description |
+|-                  |-|
+| WantedBy=         | Specifies one or more targets this unit should be wanted by when enabled|
+| RequiredBy=       | Required dependency instead of wanted, when the target is started, this unit must start|
+| Alias=            | Defines additional names (aliases) for the unit|
+|                   | Aliases create additional symlinks pointing to this unit|
+| Also=             | When enabling this unit, also enable the units listed here|
 
 
-### SysV
+***[Service]***
+
+| Option                        | Description |
+|-                              |-|
+|Type=                          | ExecStart / ExecStartPre / ExecStartPost startup progress|
+|                               | simple (default) – the started process is the main process|
+|                               | forking – systemd expects the process to fork; the child becomes the main service|
+|                               | oneshot – for short-lived commands; supports multiple ExecStart= lines executed sequentially|
+|                               | idle – delays execution until all currently queued jobs finish|
+|                               | dbus – waits until a specific D-Bus name is acquired|
+|                               | notify – waits for an explicit readiness signal|
+| ExecStart=                    | Main command or script to run|
+| ExecStartPre=, ExecStartPost= | Commands run before and after the main service|
+|                               | Each may appear multiple times|
+| ExecStop=                     | Commands run to stop the service|
+| ExecStopPost=                 | Run after stopping (even if startup failed)|
+| ExecReload=                   | Commands run when reloading the service|
+| Restart=                      | restarting the service on exit or failure|
+|                               | no (default)|
+|                               | on-failure|
+|                               | on-abnormal|
+|                               | on-watchdog|
+|                               | on-abort|
+|                               | always|
+| RestartSec=                   | Delay between service exit and restart|
+| RemainAfterExit=              | For Type=oneshot, marks the service active even after the command exits|
+| Environment=                  | Set environment variables inline|
+|                               | Multiple lines are allowed|
+|EnvironmentFile=               | Load variables from an external file|
+
+
+***[Mount]***
+
+| Option                        | Description |
+|-                              |-|
+| What=	                        | Absolute path to the source to mount|
+| Where=	                    | Absolute path of the mount point directory|
+|                               | If doesn't exist, will be created|
+| Type=                         | (optional) File system type|
+| Options=                      | (optional) Comma-separated mount options|
+| SloppyOptions=                | (optional) Unknown options in Options= are tolerated rather than causing errors|
+| DirectoryMode=                | (optional) Sets the octal permission mode used when creating the mount point directory|
+|                               | And any needed parent directories (default 0755)|
+| TimeoutSec=                   | (optional) Maximum time to wait for mount/unmount operations|
+|                               | If exeeded processes are terminated with SIGTERM and eventually SIGKILL|
+
+
+***[Automount]***
+
+| Option                        | Description |
+|-                              |-|
+| Where=                        | Absolute path that triggers the automount when accessed|
+| DirectoryMode=                | (optional) Permissions for auto-created directory (default 0755)|
+| TimeoutIdleSec=               | (optional) Idle time before automatic unmount (default 0)|
+
+> Let systemd manage dependencies automatically.\
+> **!** Put any dependencies (After/Wants/etc...) in the companion .mount file, **not in .automount**.
+
+
+***[Timer]***
+
+| Option                | Description |
+|-                      |-|
+| OnActiveSec=          | Time after timer activation|
+| OnBootSec=            | Time after boot|
+| OnStartupSec=         | Time after systemd startup|
+| OnCalendar=           | Real-time date-time schedule|
+| AccuracySec=          | Trigger time window (default 1min)|
+| Unit=                 | Unit to fire|
+| Persistent=           | Run missed events after downtime|
+| WakeSystem=           | Wake system from suspend|
+| RemainAfterElapse=    | Unit remain loaded after timer elapsed|
+
+
+## SysV
 
 instead of targets, sysV uses run levels,
 
-    REDHAT
-        0       shutdown
-        1,s,s   single user mode (system maintenance)
-        2       multiuser without networking
-        3       multiuser
-        4       custom
-        5       multiuser with GUI
-        6       reboot
-    
-    DEBIAN
-        0       shutdown
-        1       single user mode
-        2       multiuser with GUI
-        6       reboot
+|REDHAT ||
+|-      |-|
+|0      | shutdown|
+|1,s,S  | single user mode (system maintenance)|
+|2      | multiuser without networking|
+|3      | multiuser|
+|4      | custom|
+|5      | multiuser with GUI|
+|6      | reboot|
 
-`$ runlevel` > **N 5**
+|DEBIAN ||
+|-      |-|
+|0      | shutdown|
+|1      | single user mode|
+|2      | multiuser with GUI|
+|6      | reboot|
 
-in sysV `/etc/inittab` file was used to start services but later it has been used to set system run level and start terminal services.
+    $ runlevel
+    N   2
 
-`$ grep :initdefault: /etc/inittab` > **id:5:initdefault:**
+    # runlevel shows ( previous ) and ( current ) runlevels.
+    # N for newly booted.
 
-each service must have a initialization script loaded at `/etc/init.d/` dir.
+In sysV `/etc/inittab` file was **used** to start services\
+But later it has been used to set system run level and start terminal services.
 
-    $ ls /etc/init.d/
+    $ grep :initdefault: /etc/inittab
+    id:5:initdefault:
 
-    anacron*    atd*            ...
-    crond*      cups*           ...
-    ntpd*       yum-updatesd*   ...
+| Feature               | Debian            | Red Hat|
+|-                      |-                  |-|
+| **Init scripts**      | `/etc/init.d/`    | `/etc/rc.d/init.d/`|
+| **rc script**         | `/etc/init.d/rc`  | `/etc/rc.d/rc`|
+| **rc directories**    | `/etc/rcX.d/`     | `/etc/rc.d/rcX.d/`|
+| **rc.local**          | `/etc/rc.local`   | `/etc/rc.d/rc.local`|
 
-> **\*** indicates that they are executable bash scripts.
+Each service must have a initialization script loaded in **Init scripts** directory.( **\*** ) indicates that they are executable bash scripts.
 
-the program that calls these scripts is the **rc** script.
-it resides in either `/etc/init.d/` or `/etc/rc.d/`.
+the program that calls these scripts is the **rc script**.
 
-    $ ls /etc/rc.d/
+each run level has its own directory (**rc directories**). each runlevel directory has symbolic links of service initialization scripts.
 
-    init.d  rc0.d   rc2.d   rc4.d   rc6.d   rc.sysinit
-    rc      rc1.d   rc3.d   rc5.d   rc.local
+**rc.local** script allows adding additional scripts to be run after system initialization.
 
-each run level has its own directory.\
-each **rc** directory has symbolic links to initialization scripts in `/etc/init.d/` directory.\
-**rc.local** scripts allows adding additional scripts to be run after system initialization.
+**rc directories** directory example,
 
     $ ls /etc/rc.d/rc3.d
 
@@ -245,113 +377,46 @@ each **rc** directory has symbolic links to initialization scripts in `/etc/init
 
 > **K** = KILL\
 > **S** = START\
-> **00-99** = the number indicate the order to kill or start service.
+> **00-99** = the number indicate the order to kill or start service\
+> **@** = symbolic link
 
-`$ readlink -f /etc/rc.d/rc3.d/S55cups` > **/etc/rc.d/init.d/cups**
+    $ readlink -f /etc/rc.d/rc3.d/S55cups
+    /etc/rc.d/init.d/cups
 
-**rc** script run through all the kill scripts first then start scripts, allowing switching between run levels on the fly.
+> **rc** script run through all the kill scripts first then start scripts, allowing switching between run levels on the fly.
 
-#### init command
+***Change run level : `$ init 3` / `$ telinit 3`***
 
-`$ init 3` / `$ telinit 3` > change run level to 3.
+***Manage services : `$ service [service] [option]`***
 
-> `$ init 0` > shutdown system
+| Option    | Description |
+|-          |-|
+|restart    |restart the service
+|           |if not running already, display **failed** but start the service.
+|start      |start the service
+|status     |show status
+|stop       |stop service
+|reload     |load config file of running service, fails if service is not running.
 
-#### service command
+***Manage which services start with each run level (REDHAT): `$chkconfig`***
 
-`$ service httpd status` > stopped
+|Command                        | Description |
+|-                              |-|
+|chkconfig cups                 |check if 'cups' is enabled at current run level|
+|                               |**echo $?** must be issues immediately after to view result(1/0)|
+|chkconfig cups on              |enable 'cups' on current run level|
+|chkconfig cups off             |disable 'cups' on current run level|
+|chkconfig --add cups           |enable cups on all run levels|
+|chkconfig --del cups           |disable 'cups' on all run levels|
+|chkconfig --level 35 cups on   |enable 'cups' on levels 3 and 5|
+|chkconfig --level 35 cups off  |disable 'cups' on levels 3 and 5|
+|chkconfig --list cups          |show status of 'cups' on each run level|
 
-    restart     restart the service, if not already started, display **failed** and start the service.
-    start       start the service
-    status      show status
-    stop        stop service
-    reload      load config file of running service, display **failed** if service is not running.
+***Manage which services start with each run level (DEBIAN): `$update-rc.d`***
 
-#### chkconfig / update-rc.d
-
-To configure which service to run at various run levels,\
-redhat uses **chkconfig** and debian uses **update-rc.d**
-
-    chkconfig cups                  check if 'cups' is enabled at current run level
-    chkconfig cups on               enable 'cups' on current run level
-    chkconfig cups off              disable 'cups' on current run level
-    chkconfig --add cups            enable cups on all run levels
-    chkconfig --del cups            disable 'cups' on all run levels
-    chkconfig --level 35 cups on    enable 'cups' on levels 3 and 5
-    chkconfig --level 35 cups off   disable 'cups' on levels 3 and 5
-    chkconfig --list cups           show status of 'cups' on each run level
-
-> **echo $?** must be used with `chkconfig cups` to display the returning result.
-
-    $ chkconfig cups
-    $ echo $?
-    1
-
-> **1 = FALSE** / **0 = TRUE**
-
-    update-rc.d cups defaults                           start 'cups' at default runlevel.
-    update-rc.d cups remove                             remove 'cups' from starting at default runlevel.
-    update-rc.d -f cups start 55 2 3 . stop 80 0 1 6    start 'cups' at 55 on levels 2 and 3
-                                                        kill 'cups' at 80 on levels 0,1 and 6
-
-## MOUNT UNITS
-
-presistent storages are defined with in `/etc/fstab` file or as a mount unit file.\
-systemd converts fstab configuration to mount unit files automatically, when rebooting or reloading systemd.\
-a single mount unit file is created for each mount point.\
-**/home/temp/usb/** >> **home-temp-usb.mount**
-+ remove preceding '/'
-+ remove following '/'
-+ replace middle '/'s with -
-+ add .mount
-
-.
-
-    $ cat /etc/systemd/system/home-temp-usb.mount
-    [Unit]
-    ...
-
-    [Mount]
-    What=/dev/sda1
-    Where=/home/temp/usb
-    Type=ext4
-    Options=defaults
-    SloppyOptions=off   << set 'on' to ignore mount options unsupported by filesystem
-    TimeOutSec=4        << set time timeout for a completed mount else fail mount.
-
-    [Install]
-    ...
-
-`$ systemctl status home-temp-usb.mount` > check mount units status.\
-`$ systemctl enable home-temp-usb.mount` > enable mount unit.
-
-## AUTOMOUNT UNITS
-
-automount.\
-unmount after certain idle seconds.\
-similar naming convention with **.automount** extention\
-
-    [Automount]
-    Where=/home/temp/usb
-    DirectoryMode=0755
-    TimeOutIdleSec=600
-
-> 'DirectoryMode' (permissions) / 'TimeOutIdlesec' are not required.
-
-## TIMER UNITS
-
-allows defining events to occur at certain times.
-
-    AccuracySec         accuracy of timer, default 1 min.
-    OnActiveSec         time relative to timer activated.
-    OnBootSec           time relative to when system booted.
-    OnCalender          as specific date time.
-    Persistent          store on disk when the timer activated last.
-    RemainAfterElapse   unit remain loaded after timer elapsed to query status by systemctl.
-    Unit                what unit to start.
-    WakeSystem          resume system from being suspended.
-
-
-
-
-
+|Command                                            | Description |
+|-                                                  |-|
+|update-rc.d cups defaults                          |start cups with default runlevel|
+|update-rc.d cups remove                            |remove 'cups' from starting with default runlevel|
+|update-rc.d -f cups start 55 2 3 . stop 80 0 1 6   |Create start symlinks with priority 55 for runlevels 2 and 3|
+|                                                   |Create stop symlinks with priority 80 for runlevels 0, 1, and 6|
