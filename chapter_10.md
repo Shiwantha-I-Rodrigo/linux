@@ -1,283 +1,323 @@
-# USER ADMINISTRATION
+# USER CREATION
 
-## ADDING A USER
+|INPUTS                                                             |                           |                   |                           |OUTPUT|
+|-                                                                  |-                          |-                  |-                          |-|
+|User Input<br>/etc/login.defs<br>/etc/skel<br>/etc/default/useradd |--><br>--><br>--><br>-->   | **User Creation** |--><br>--><br>--><br>-->   | /home/userid<br>/etc/passwd<br>/etc/shadow<br>/etc/group|
 
-> $ useradd
+---
 
-
-resourses used in user creation,
-
-    User Input             →|                |→   /home/userid
-    /etc/login.defs        →|      User      |→   /etc/passwd
-    /etc/skel              →|    Creation    |→   /etc/shadow
-    /etc/default/useradd   →|                |→   /etc/group
+## INPUTS
 
 ### /etc/login.defs
+--> contain directives to be used in various **shadow password suite** commands ( **useradd / userdel / passwd / etc.** ).
 
-contain directives to be used in various **shadow password suite** commands ( *useradd / userdel / passwd / etc.* ).
+| **Setting**           | **Description** |
+| -                     | - |
+| **CREATE_HOME**       | If set to **yes**, **useradd** will create the user's home directory. If **no**, it won't unless **-m** is specified|
+| **HOME_MODE**         | Sets default permissions in **octal mode** for newly created home directories|
+| **PASS_MAX_DAYS**     | Maximum days a password is valid before it must be changed|
+| **PASS_MIN_DAYS**     | Minimum days before the user is allowed to change their password again|
+| **PASS_WARN_AGE**     | Number of days before password expiry that the user is warned|
+| **PASS_MIN_LENGTH**   | Minimum number of characters required in a password|
+| **UID_MAX**           | Maximum value for a regular user ID ( **60000** )|
+| **UID_MIN**           | Minimum value for a regular user ID ( **1000** )|
+| **SYS_UID_MAX**       | Maximum value for a system user ID ( **999** )<br>system accounts are used by services & daemons.|
+| **SYS_UID_MIN**       | Minimum value for a system user ID ( **100** )<br>**root user accout UID is 0**|
+| **ENCRYPT_METHOD**    | Hashing method used to encrypt user passwords.( **SHA256**, **SHA512**, or **MD5** )|
 
-    ...
-    CREATE_HOME  no
-    HOME_MODE   0700
-    PASS_MAX_DAYS   99999
-    PASS_MIN_DAYS   0
-    PASS_WARN_AGE   7       < days a warning is issued before password expires >
-    PASS_MIN_LENGTH 5
-    UID_MAX     60000
-    UID_MIN     1000
-    SYS_UID_MAX 999
-    SYS_UID_MIN 201
-    ENCRYPT_METHOD  SHA256  < hashing method to hash account password>
-    ...
+> **!** only accounts created **after** installation will be following these constraints.
 
-+ each user account has a unique UID, each system account has a unique SYS_UID.
-+ system accounts are used by services / daemons.
-+ only accounts created **after** installation will be following these constraints.(ie. **root user accout is 0**).
+---
 
 ### /etc/default/useradd
+--> contain default settings for the **useradd** command.
 
+| **Setting**           | **Description** |
+| -                     | - |
+| **GROUP**             | Default **primary group ID (numeric)** assigned to new users|
+| **HOME**              | Base directory under which home directories are created|
+| **INACTIVE**          | Days after password expiry until the account is disabled. **-1** means never|
+| **EXPIRE**            | Account expiration date (format: **YYYY-MM-DD**). Blank means no expiration|
+| **SHELL**             | Default login shell for new users|
+| **SKEL**              | Path to the **skeleton directory**, source of default user directories & config files|
+| **CREATE_MAIL_SPOOL** | If **yes**, creates a mail spool file for the user (e.g., **/var/mail/username**)|
 
-    GROUP=100
-    HOME=/HOME          < if not set a home will not be created >
-    INACTIVE=-1         < number of days before password expired and not changed to deactivate account >
-    EXPIRE=
-    SHELL=/bin/bash
-    SKEL=/etc/skel      < skeleton directory >
-    CREATE_MAIL_SPOOL=yes
+**`$ useradd -D`**\
+--> view default values.
 
+**`$ useradd -D -s /bin/bash`**\
+--> change "default shell" value in **/etc/default/useradd**.
 
-+ above result can be viewed with `$ cat /etc/default/useradd` or `$ useradd -D` commands.
+---
 
 ### /etc/skel
+--> contains default files and directories that are automatically copied into a new user's home directory on creation.
 
-+ contain **environment files** to be coppied to the user home directory when creating a new user home directory.
+---
 
->***files that are effected after user creation is discussed below !***
+## OUTPUT
 
 ### /etc/passwd
+--> contains essential information about all user accounts on the system, including system users and regular users.
 
-+ each accounts info is sotred in a single line.
-
-.
-
-    ...
     root:x:0:0:root:/root:/bin/bash
     bin:x:1:1:bin:/bin:/sbin/nologin
-    ...
     chris:x:1001:1001:chris Baron:/home/chris:/bin/bash
     ...
 
-    (username):(password):(user_id):(group_id):(comments / user_full_name):(user_home_dir):(user_default_shell)
+| **Field Position**    | **Field Name**            | **Description** |
+| -                     | -                         | - |
+| 1                     | **username**              | The login name of the user |
+| 2                     | **password**              | **Usually **x****, indicating that the hashed password is stored in **/etc/shadow** |
+| 3                     | **user_id** (UID)         | The User ID number |
+| 4                     | **group_id** (GID)        | The Primary Group ID number for the user ( **/etc/group** ) |
+| 5                     | **comments**              | A field for full name, contact info, etc. |
+| 6                     | **user_home_dir**         | The absolute path to the user's home directory |
+| 7                     | **user_default_shell**    | The default shell program<br>If the default shell is set to **/sbin/nologin** (message+logout) or **/bin/false** (logout), the user cannot login<br>The message for **/sbin/nologin** can be customized by editing the **/etc/nologin.txt** file |
 
-> if default shell is set to **/sbin/nologin** or **/bin/false**, user cannot login to the system interactively.\
-> **/sbin/nologin** display a message and log the user out before reaching a command prompt.\
-> the message can be modified with **/etc/nologin.txt**.\
-> **/bin/false** just logs the user out before reaching a command prompt.\
-> password are now stored at **/etc/shadow** instead of the **/etc/passwd** file as indicated by the **x**.
+---
 
 ### /etc/shadow
-
-+ updated when accout is created, even before setting a password.
-
-.
+--> securely stores user password information and additional account-related details.
 
     root:!::0:99999:7:::
     bin:*:17590:0:99999:7:::
-    ...
     chris:we35X@hftusdstetegfq34536363t#@S&*jU*h6ehejewerjt9erj9:17751:0:99999:7:::
     ...
 
-    (username):
-    (password_hash):
-    (last_password_change_in_unix_time_days_format):
-    (days_to_wait_after_password_change_to_change_again):
-    (password_expiration):
-    (days_warning_is_issued_before_expiration):
-    (days_after_expiration_to_deactivate_account):
-    (accout_expiration_unix_time_days_format):
-    (special_flag_currently_not_used)
+| **Field Position**    | **Field Name**            | **Description** |
+| -                     | -                         | - |
+| 1                     | **username**              | The login name; must match an entry in **/etc/passwd** |
+| 2                     | **encrypted_password**    | The hashed password, or special values like **!**, **\*** or empty |
+| 3                     | **last_changed**          | Days since Jan 1, 1970 when the password was last changed |
+| 4                     | **min_age**               | Minimum days before the user is allowed to change their password again |
+| 5                     | **max_age**               | Maximum days a password is valid before it must be changed |
+| 6                     | **warn**                  | Number of days before password expiry that the user is warned |
+| 7                     | **inactive**              | Number of days after password expires until the account is disabled<br>user will be prompted to change within this period |
+| 8                     | **expire**                | Days since Jan 1, 1970 the account will be disabled |
+| 9                     | **reserved**              | Reserved for future use |
 
-> after password expiration, user has a grace period (field 7) to login, but must change the password immediately.\
-> after account expiration no such period is availabe.
+> **!** shadow file is updated when a new accout is created, even before setting a password.
 
-> **!** or **!!** indicates no password is set.\
-> **\*** indicates account cannot use a password to login.\
-> **!(password_hash)** indicates the account is locked.
+| **encrypted_password field**  | **Description** |
+| -                             | - |
+| **!**                         | Account is **locked** — disables password-based login |
+| **!!**                        | Password **not set** — account was created without a password |
+| **\***                        | Password **login disabled** — often used for system or service accounts |
+| **!\$6$...**                  | A **locked account with a valid password hash** — hash is present, but account is locked |
+| *(empty)*                     | No password set — **!!! may allow login without a password**|
 
-### User Account Creation Process
+## ACCOUNT CREATION PROCESS
 
-1. review distro specific configurations
+**`useradd `**`[option] [username]`\
+--> create a new user account.
 
-    * grep CREATE_HOME /etc/login.defs < check if home is created by default
-    * useradd -D | grep SHELL < check default shell for new account
-    * etc...
+| Option|                               | Description |
+| -     | -                             | - |
+| **-c**| **--comment**                 | Comment field (typically user’s full name)|
+| **-d**| **--home** / **--home-dir**   | Specify user's home directory|
+| **-G**| **--groups**                  | Specify additional (secondary) groups|
+| **-m**| **--create-home**             | Create home directory if it doesn't exist|
+| **-M**| **--no-create-home**          | Do **not** create a home directory|
+| **-u**| **--uid**                     | Set user ID|
+| **-r**| **--system**                  | Create a **system account** instead of a regular user|
+| **-p**|                               | set user’s password<br>( must be an **encrypted password hash**, not plain text)|
+| **-D**| **--defaults**                | display or set defaults from **/etc/default/useradd**|
+| **-b**| **--base-dir**                | specify base directory for home directories<br>can be used with **-D**|
+| **-e**| **--expiredate**              | Set account expiration date (**yyyy-mm-dd**)<br>can be used with **-D**|
+| **-f**| **--inactive**                | Days after password expires until account is disabled<br>can be used with **-D**|
+| **-g**| **--gid**                     | Specify default (primary) group ID<br>can be used with **-D**|
+| **-s**| **--shell**                   | Specify default shell (e.g., **/bin/bash**)<br>can be used with **-D**|
 
-2. create user account
+`$ useradd -c "robert" -d /custom/home/robert -m -e 2025-12-31 -g users -G wheel,audio,video -s /bin/bash -p $(openssl passwd -6 'StrongP@ssw0rd') robert`
+--> useradd example.
 
-    * sudo useradd Adam
+> **!** it is much better to use `passwd` command than using the **-p** option.
 
-.
+> **!** debian distros promte **adduser** interactive program instead of **useradd** command\
+> **!** may even link **useradd** to run **adduser**.
 
-### useradd
-add a new user account to the system
+## MANAGE PASSWORDS
 
-    -c  --comment           Comment field
-    -d  --home
-        --home-dir          User home dir
-    -D  --defaults          set / display /etc/default/useradd directives
-    -e  --expiredate        account expiration (yyyy-mm-dd)
-    -f  --inactive          time to deactivate account after password has expired
-    -g  --gid               default group membership
-    -G  --groups            additional groups
-    -m  --create-home       create home if not exist
-    -M  --no-create-home    do not create home
-    -s  --shell             default shell
-    -u  --uid               account uid
-    -r  --system            account type 'system' instead of 'user'
+**`passwd `**`[option] [username]`\
+--> modify the login password of a user.
 
-> some distros promte **adduser** program instead of **useradd** \
-> and may even symbolic link **useradd** to run **adduser**.
+| **Option**        |                               | **Description** |
+| -                 | -                             | - |
+| **-d**            | **--delete**                  | Remove the user's password (user can log in without one)|
+| **-e**            | **--expire**                  | Immediately expire the password (user must change it on next login)|
+| **-i**            | **--inactive**                | Days after password expires until account is disabled|
+| **-l**            | **--lock**                    | Lock the account by adding **!** to the password field in **/etc/shadow**|
+| **-n**            | **--minimum**                 | Minimum days before the user is allowed to change their password again|
+| **-S**            | **--status**                  | Show password status information for the user :<br>**P** - password / **NP** - no password / **L** - locked<br>Last password change<br>minimum / maximum / warning / inactive<br>Hash Algo<br>etc.|
+| **-u**            | **--unlock**                  | Unlock the account by removing **!** from the password field in **/etc/shadow**|
+| **-w**            | **--warning** / **--warndays**| Number of days before password expiry that the user is warned|
+| **-x**            | **--maximum** / **--maxdays** | Maximum days a password is valid before it must be changed|
 
-`$ sudo useradd -D -s /bin/bash`    < change default shell without using a text editor >
+**`chage `**`[option] [username]`\
+--> view and modify user password aging policies.
 
-## MAINTAINING PASSWORDS
-
-`$ passwd`  < change own account password >\
-`$ sudo passwd Adam`    < change Adam's password >
-
-    -d  --delete        remove password
-    -e  --expire        set expire date
-    -i  --inactive      set time to deactivate account after password expire
-    -l  --lock          add '!' to shadow file, preventing login
-    -n  --minimum       number of days untill password may change again
-    -S  --status        account password status
-    -u  --unlock        unlock acount, remove '!' from shadow file
-    -w  --warning
-        --warndays      number of days before warning is issued to password expiration.
-    -x  --maximum
-        --maxdays       number of days to password expiration
-
-> -S option shows\
-> password state (P - password / NP - no password / L - locked)
-> last password change\
-> minimum / maximum / warning / inactive\
-> additional info in pranthesis ie - ( hash algo used )
-
-`$ chage -l Adam`    < view account password status >\
-`$ sudo chage Adam`     < change password settings>
+| **Option**    | **Description** |
+| -             | - |
+| **-l**        | **List current password aging information** for the user|
+|               | **No options**, activate interactive mode to change all aging information|
 
 ## MANAGE ACCOUNTS
 
-`$ sudo usermod -L Adam`
+**`usermod `**`[option] [username]`\
+--> modify user acount information.
 
-    -c  --comment
-    -d  --home          set new user home. add `-m` to move current files to new dir.
-    -e  --expiredate    mod accounts expire date.
-    -f  --inactive      mod days to deactivate account after password expiration.
-    -g  --gid           mod default group.
-    -G  --groups        mod additional groups. add `-a` to avoid removing old groups.
-    -l  --login         mod username. does not change home dir.
-    -L  --lock          lock account, using shadow file.
-    -s  --shell         mod account shell.
-    -u  --uid           mod account uid.
-    -U  --unlock        unlock account using shadow file.
+| **Option**    |                   | **Description** |
+| -             | -                 | - |
+| **-c**        | **--comment**     | Change the **comment field**|
+| **-d**        | **--home**        | **New home directory** path. Add **-m** to **move** existing files to the new location|
+| **-e**        | **--expiredate**  | Account **expiration date** (format: **YYYY-MM-DD**)|
+| **-f**        | **--inactive**    | Number of **inactive days** after password expiration before account is disabled|
+| **-g**        | **--gid**         | User's **primary group** ( group ID or group name )|
+| **-G**        | **--groups**      | User's **additional groups** (comma-separated). Use **-a** to **append** instead of overwrite|
+| **-l**        | **--login**       | **username/login name**. **Does not** rename the home directory|
+| **-L**        | **--lock**        | **Lock the account** (prepends **!** to the password hash in **/etc/shadow**)|
+| **-s**        | **--shell**       | User's **default login shell**|
+| **-u**        | **--uid**         | User's **UID (user ID)**|
+| **-U**        | **--unlock**      | **Unlock the account** (removes **!** from password hash in **/etc/shadow**)|
 
-`$ sudo userdel -r Adam`
-
-> any warnings due to missing files, may be due to files that were not created during account creation and can be ignored.
-
+**`$ sudo userdel -r Adam`**\
+--> remove user Adam and home directory, any warnings due to missing files,\
+may be due to files that were not created during account creation and can be ignored.
 
 ## MANAGE GROUPS
 
-- Part of linux DAC (Discretionary Access Control).
-- Although a user can have multiple groups it's processes can have only one group at a time.
-- Default group is users current group when first logging in.
-- Groups are identified by it's name and GID
-- If default group is not set, a new group with **username** is created at acount creation.
+- Linux uses Discretionary Access Control ( **DAC : using user/group ownership to control file access** ) as its primary permission model.
+- User can belong to **multiple groups**, but when a process is started by the user, it runs with **a single group ID**.
+- When a user logs into a Linux system, their shell session and processes start with their primary group.
+- Every group in Linux has a **Name** and a **Group ID (GID)**.
+- When a new user is created without specifying a default group. the system, automatically creates a new group\
+  with the same name as the username, which becomes the user's primary group.
 
-`$ getent passwd Adam`  < to find the default group >\
+### /etc/group
+--> stores group information.
 
-    Adam:x:1002:1002::/home/Adam:/bin/bash < third column show the default group >
+| Field                     | Description |
+| -                         | - |
+| **group_name**            | The **name** of the group|
+| **password_placeholder**  | Usually **x**, indicating a group password (now deprecated)<br>***!* check /etc/gshadow file to confirm that a password is set**|
+| **GID**                   | The **Group ID**, unique numeric identifier for the group|
+| **user_list**             | A **comma-separated list** of users who are **members of this group**<br>! Users who have this group as their primary group are not shown in the this field|
 
-> **/etc/group** file contains,\
-> \
-> Group Name\
-> Group Password, 'x' indicates password stored in **/etc/gshadow** file\
-> GID\
-> Group Members. seperated by commas.
+---
 
-**! even if password field is marked with an 'x', /etc/gshadow must be checked to verify if a password is set.**
+**`getent `**`[database] [key]`\
+- supported databases :
+    + aliases
+    + group
+    + gshadow
+    + hosts
+    + passwd
+    + services
+    + shadow
+    + etc.
 
-`$ sudo groupadd -g 1042 myGroup` < create new group myGroup>
+`$ getent passwd Adam`\
+--> show Adam record from /etc/passwd file.
 
-! debian prefers **addgroup** instead of **groupadd**
+    Adam:x:1002:1002::/home/Adam:/bin/bash
+                 ↑
+            primary group
 
-`$ sudo getent gshadow myGroup` < get myGroup password info >
+---
 
-    myGroup:!::     < no password is set, indicated by '!'>
+**`groupadd` / `groupmod` / `groupdel`**\
+--> manage groups.
 
-**!** *Group passwords allow non members of the group access to the group, which is a bad security practice*\
-**!** *instead not setting a password and using group memberships to allow access is the recomended method.*
+| Option    | `groupadd`| `groupmod`| `groupdel`| Description |
+| -         | -         | -         | -         | - |
+| **-g**    | ✔         | ✔         | 𐄂         | Specify/change the **GID**<br>duplicates are not allowed by default|
+| **-o**    | ✔         | ✔         | 𐄂         | Allow duplicate GIDs (with **-g**)<br>may cause unexpected behavior|
+| **-f**    | ✔         | 𐄂         | 𐄂         | Exit silently if the group already exists|
+| **-r**    | ✔         | 𐄂         | 𐄂         | Create a **system group** (GID < 1000)|
+| **-n**    | 𐄂         | ✔         | 𐄂         | Rename a group|
 
-`$ sudo usermod -aG myGroup Adam`   < add user Adam to group myGroup >
+> **!** The groupdel command removes the group from all users' secondary group memberships.\
+> **!** However, if the group is a primary group for any user, the command will fail with an error and the group itself will not be deleted.\
+> **!** but the group will still be removed from the secondary group lists because of the attempt.
 
-`$ sudo groupmod -g 1114 myGroup`   < change GID of mygroup to 1114 >
+---
 
-*In case of duplicate GID an error will be displayed, and not change the GID*
+    myGroup:!::
+            ↑
+    no password is set
 
-`$ sudo groupdel myGroup`       < delete group myGroup >
+> **!** *Group passwords allow non members access to the group, which is a bad security practice.*\
+> **!** *instead of setting a password, use group memberships to allow access.*
 
-*After deletion group will be removed from user accounts as well*
-
-`$ sudo find / -gid 1114 2>/dev/null`   < find any files with access settings for group 1114 >
+---
 
 # ENVIRONMENTAL SETTINGS
 
 - BASH shell uses **Environment Variables** to store information about the session.
 
-`$ printenv`    < print environmental variables >
+**`echo `**`$[variable]+++`\
+**`printenv `**`[option] [variable+++]`\
+--> print environmental variables.
 
-    HISTCONTROL     set how commands are saved in history.
-    HISTSIZE        max number of commands in history.
-    PATH            dirs which shell look for commands.
-    PS1             configure shells primary prompt.
-    SHELL           set shells absolute dir reference.
-    USER            contain current user name.
+| Variable              | Description |
+| -                     | - |
+| `HOME`                | Path to the current user's home directory |
+| `USER` / `LOGNAME`    | Current user's username |
+| `UID`                 | User ID of the current user |
+| `GID`                 | Group ID of the current user |
+| `SHELL`               | Absolute path to the user's **default shell** |
+| `PATH`                | Colon-separated list of directories where the shell looks for **commands** |
+| `PWD`                 | Current working directory |
+| `PS1`                 | Configures the **primary prompt string** in interactive shells |
+| `EDITOR`              | Default text editor (for CLI tools like `crontab`, `git`, `visudo`, etc.) |
+| `LANG`                | Current language and locale setting (ie. `en_US.UTF-8`)|
+| `HOSTNAME`            | The system's hostname |
+| `XDG_SESSION_TYPE`    | Type of current session (`tty`, `x11`, `wayland`)|
+| `HISTFILE`            | Path to the file where command history is saved (ie. `~/.bash_history`)|
+| `HISTCONTROL`         | Controls how commands are **saved in history** (ie. ignores duplicates / ignore commands starting with a space) |
+| `HISTSIZE`            | Sets the **maximum number of commands** stored in memory for the history list |
 
-`$ echo $HISTSIZE`  < echo history limit>
+> **!** environment variables are stored within **environment files / startup files**.
 
-- environment variables are stored within **environment files aka startup files**.
+| File                                      | Description |
+| -                                         | - |
+| **~/.bash_profile**                       | For User's login shell<br>**highest priority**|
+| **~/.bash_login**                         | For User's login shell<br>! may not exist on some systems|
+| **~/.profile**                            | For User's login shell<br>**lowest priority**<br>support other POSIX login shell like **sh** or **dash**|
+| **~/.bashrc**                             | For User's **non-login** shells ( ie. GUI terminal ) |
+| **/etc/profile**                          | System-wide version of **.profile**|
+| **/etc/bashrc**<br>**/etc/bash.bashrc**   | System-wide version of **.bashrc** |
+| **/etc/environment**                      | System-wide environment variables |
 
-- BASH can be opened in 3 ways,
-    * default login shell, at a tty{1-6} terminal. ( 7th is the GUI )
-    * subshell , terminal emulators in GUI.
-    * non interactive shell, when running shell scripts.
+> **!** instead of altering the **/etc/profile** file, create a custom .sh file and\
+> **!** place it in **/etc/profile.d/** to be ran on shell startup like **.bashrc**.
 
-- 4 environment files in $HOME,
-    * .bash_profile
-    * .bash_login
-    * .profile
-    * .bashrc
+Bash can be started in three common ways:
+1. **Login Shell** :
+    - Bash runs as the default login shell when logging into a virtual console.
+    - tty7 is usually reserved for the GUI in many Linux systems.
+2. **Interactive Subshell** :
+    - Terminal Emulator in GUI.
+3. **Non-Interactive Shell** :
+    - When a shell script is executed, Bash runs in non-interactive mode.
 
-**!** not all 4 of these files are found on every distribution.\
-**!** **bashrc** runs everytime a non interactive shell is started.
-
-- global environment files,
-    * /etc/profile
-    * /etc/profile.d < directory >
-    * /etc/bashrc or /etc/bash.bashrc < depends on the distro >
-
-> instead of altering the profile file, create a custom .sh file and place it in profile.d to be run on shell startup using the profile file.
+---
 
 # QUERYING USERS
 
-`$ whoami`      < print current user name >.
+**`whoami`**\
+--> print current user name.
 
-`$ who`         < print current system users, their terminals, login date-time, remote ip >
+---
 
-`$ w`
+**`who`**\
+--> print current system users, their terminals, login date-time, remote ip.
 
-output of the **w** command -
+---
+
+**`w`**\
+--> show who is logged in and what they are doing.
 
 - system time
 - system up time
@@ -292,65 +332,75 @@ output of the **w** command -
     * PCPU - CPU time used currently by the account.
     * WHAT - what command the account in currently running.
 
-**w** pulls info from **/var/run/utmp** file and files in **/proc/**.
+> **!** **w** uses information from **/var/run/utmp** and files in **/proc/**.
 
-`$ id`      < UID(uname) , GID(gname), otherGIDs(names) >
+---
 
-    -g  --group     current GID
-    -G  --groups    all account group memberships
-    -u  --user      account UID
-    -n  --name      combine with -g / -G /-u to filter just the name.
+**`id `**`[option] [username+++]`\
+--> show the users UID+uname , GID+gname, secondary groups(GID+gname).
 
-`$ last`    < display list of accounts and last login / logout times >
+| Option    |               | Description |
+| -         | -             | - |
+| **-g**    | **--group**   | User's **Primary group ID (GID)** |
+| **-G**    | **--groups**  | User's group memberships ( all including primary ) |
+| **-u**    | **--user**    | User's **user ID (UID)** |
+| **-n**    | **--name**    | Used with **-g**, **-G**, **-u** to display the **name instead of the numeric ID** |
 
-* pulls from **/var/log/wtmp**
-* **/var/log/wtmp** gets rotated automatically with a cronjob.
-* to access old wtmp files > `$ last -f /var/log/wtmp.1`
+---
+
+**`last `**\
+--> display list of accounts and last login / logout times.
+
+> **!** **last** uses information from **/var/log/wtmp**.
+> **!** **/var/log/wtmp** gets rotated automatically with a cronjob.
+> **!**  use old wtmp files --> `$ last -f /var/log/wtmp.1`
+
+---
 
 # DISK SPACE USAGE
 
-> set limits to user / group space utilization and number of files.
+limit user / group space utilization and number of files can be set with **quotas**.
 
-1. mod /etc/fstab to enable quota support.
-2. remount the file system.
-3. create quota files.
-4. establish user / group quotas and grace periods.
+**`$ mount | grep /dev/sdb1`**\
+--> check if quotas are enabled.
 
-1 > add **usrquota** and/or **grpquota** to mount options
+    /dev/sdb1 on /home/Adam/quotatest type ext4 (rw,realtime,seclabel,quota,usrquota,grpquota,data=ordered)
+
+**`$ vim /etc/fstab`**\
+--> edit **/etc/fstab** to add the appropriate quota options ( **usrquota** / **grpquota** ) for the target file system.
 
     /dev/sdb1 /home/Adam/quotatest ext4    defaults,usrquota,grpquota 0 0
 
-2 > `$ umount /dev/sdb1` > `$ mount -a` (mount all in fstab)
+**`$ umount /dev/sdb1`**\
+**`$ mount -a`**\
+--> remount the file system to apply the updated mount options with quota support.
 
-check if quotas are enabled,
+**`$ quotacheck -cug /home/user1/quotatest`**\
+--> create the quota database files (**aquota.user** / **aquota.group**).
 
-    $ mount | grep /dev/sdb1
-    /dev/sdb1 on /home/Adam/quotatest type ext4 (rw,realtime,seclabel,quota,usrquota,grpquota,data=ordered)
+| Option    | Description |
+| -         | - |
+| **-c**    | Create quota files |
+| **-u**    | For user quotas (**aquota.user**) |
+| **-g**    | For group quotas (**aquota.group**) |
+| **-a**    | Apply to all quota-enabled filesystems |
 
-3 >  `$ quotacheck -cug /home/user1/quotatest`
-
--c create files\
--u for user ( **aquota.user** )\
--g for group ( **aquota.group** )
--a for all quota enabled file systems.
-
-4 > `$ edquota -u Adam`
-
-open in vim editor unless $EDITOR is set,
+**`$ edquota -u Adam`**\
+--> Set user / group quota limits.
+   
+    ( open in vim editor unless $EDITOR is set )
 
     Disk quotas for user Adam (uid 1004):
     filesystem      blocks      soft        hard        inodes      soft        hard
     /dev/sdb1       212         4096        6144        2           0           0
     ...
 
-! **blocks** and **inodes** cannot be modified presistently since they are just current status.\
-! **soft** and **hard** limits can be set for both. *0 is unlimited*.
+> **!** **Blocks** and **inodes** reflect current status and can't be persistently modified, but **soft** and **hard** limits (**0** for unlimited) can be set for both.
 
-grace periods must be set for **soft** limits.
+**`$ edquota -t`**\
+--> Set grace periods for **soft** limits.
 
-`$ edquota -t`
-
-open in vim editor unless $EDITOR is set,
+    ( open in vim editor unless $EDITOR is set )
 
     grace period before enforcng soft limits for users:
     time units may be : days, hours, minutes or seconds
@@ -358,13 +408,11 @@ open in vim editor unless $EDITOR is set,
     filesystem      block grace period      inode grace period
     /dev/sdb1       7 days                  7 days
 
-`$ sudo quotaoff -agu`  < turn off quotas for (-a) all filesystems for (-g) groups and (-u) users >\
-`$ sudo quotaon`
+**`$ sudo quotaoff -agu`**\
+--> turn off quotas for (-a) all filesystems for (-g) groups and (-u) users.
 
-`$ quota - Adam`
+**`$ sudo quotaon`**\
+--> turn on quotas.
 
-    Disk quotas for user Adam (uid 1004):
-    filesystem      blocks      soft        grace       hard        inodes      soft        hard        grace
-    /dev/sdb1       212         4096                    6144        2           0           0
-
-`$ repquota -a` < check all filesystem quotas >
+**`$ repquota -a`**\
+--> quota report

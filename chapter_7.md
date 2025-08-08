@@ -2,28 +2,27 @@
 
 Information required for a network connection,
 
-1. Host Address
-2. Network Subnet Address
-3. Gateway Address
-4. System Hostname
+1. Host IP Address
+2. System Hostname
+3. Network Subnet Address
+4. Gateway Address
 5. DNS server Address
 
 this information can be modified using,
 
-- config files
-- cli
-- graphical tools
+- **config files**
+- **cli**
+- **graphical tools**
 
 ## CONFIG FILES
 
-### INTERFACES
+|Component      |File Location|
+|-              |-|
+|Interfaces     |(debian) --> **/etc/network/interfaces**<br>(RedHat) --> **/etc/sysconfig/network-scripts**<br>(opensuse) --> **/etc/sysconfig/network**|
+|Hostname       |**/etc/hostname**<br>**/etc/HOSTNAME**|
+|DNS            |**/etc/resolv.conf**|
 
-+ locations
-    - debian      > /etc/network/interfaces
-    - redHat      > /etc/sysconfig/network-scripts
-    - opensuse    > /etc/sysconfig/network
-
-.
+***INTERFACES***
 
     auto eth0
     iface eth0 inet static
@@ -45,16 +44,7 @@ according to above configuration,
 > the eth1 ipv4 address is set by a dhcp server\
 > the eth1 ipv6 address is set by linux as a link local address (no internet access)
 
-### HOSTNAME
-
-- /etc/hostname
-- /etc/HOSTNAME
-
-### DNS
-
-- /etc/resolv.conf
-
-.
+***DNS***
 
     domain mydomain.com
     search mytest.com
@@ -67,196 +57,250 @@ according to above configuration,
 
 ### NETWORK MANAGER
 
-- nmtui > text based menu cli tool
-- nmcli > text only cli tool
-- graphical tool
+**`nmtui `**\
+--> text based menu cli tool.
+
+**`nmcli `**`[option] [object] [command] [argument+++]`\
+--> text only cli tool.
+
+**`nm-connection-editor`**\
+--> graphical tool.
 
 ### IPROUTE2 UTILITIES
 
-#### ip
+**`ip `**`[option] [object] [command] [argument+++]`\
+--> managing networking aspects.
 
-    address     display IPV4/6 addresses on the device
-    addrlabel   define configuration labels
-    l2tp        tunnel ethernet over ip
-    link        define a network device
-    maddress    define a multicast address for the system to listen to
-    monitor     listen for netlink messages
-    mroute      define an entry on the multicast routing cache
-    mrule       define a rule on the multicast routing policy db
-    neighbor    manage ARP or NDISC cache entries
-    netns       manage network namespaces
-    ntable      manage neighbor cache operation
-    route       manage routing table
-    rule        manage entrie in routing policy db
-    tcpmetrics  manage TCP metrics on the interface
-    token       manage tokenized interface identifiers
-    tunnel      tnnel over ip
-    tuntap      manage TUN/TAP devices
-    xfrm        manage IPSec policies 
+***OBJECTS***
 
-`$ ip route add default via 192.168.1.254 dev enp0s3`\
-`$ ip address add 10.0.2.15/24 dev enp0s3`\
-`$ ip link set enp0s3 up`
+| **Object**        | **Abbreviation**            | **Description / Usage**|
+|-                  |-                            |-|
+| **link**          |**l**                        | Manage **network interfaces**: show, set up/down, change MTU, rename, etc|
+| **address**       |**a**<br>**addr**            | Manage **IP addresses**: add, delete, or view IPs on interfaces|
+| **route**         |**r**                        | Manage **routing tables**: add/delete routes, show current route table|
+| **neighbour**     |**n**<br>**neigh**           | Manage **neighbor table** (ARP/NDP): add/delete/view ARP entries|
+| **rule**          |                             | Manage **policy routing rules**: define source-based or custom routing rules|
+| **maddress**      |**maddr**                    | Manage **multicast addresses** on interfaces|
+| **mroute**        |                             | Show/manipulate **multicast routing cache**|
+| **mrule**         |                             | Show/manage **multicast routing policy rules**|
+| **tunnel**        |                             | Manage **tunnels** (GRE, IPIP, SIT): used for VPNs, encapsulation|
+| **addresslabel**  |**addrl**<br>**addrlabel**   | Manage **labels** for IP addresses, for source address selection|
+| **xfrm**          |                             | Manage **IPsec state/policy**: security associations, encryption policies|
+| **netns**         |                             | Manage **network namespaces**: isolated network stacks, useful in containers|
+| **l2tp**          |                             | Manage **L2TP tunnels and sessions**|
+| **tcp_metrics**   |                             | View/manage **cached TCP metrics** for performance tuning|
+| **nexthop**       |                             | Define/manage reusable **nexthop groups** for routes (multipath or fallback)|
+| **monitor**       |                             | Monitor **live changes** to link, address, route, neighbor states in real-time|
+| **tuntap**        |                             | Manage TUN/TAP virtual network kernel devices that are used for creating user-space network interfaces|
+| **ntable**        |                             | Manage and inspect neighbor table parameters|
+
+|Example                                                |Description|
+|-                                                      |-|
+|`$ ip route add default via 192.168.1.254 dev enp0s3`  |adds a default route (gateway) 192.168.1.254 via the enp0s3 interface to the system's routing table|
+|`$ ip address add 10.0.2.15/24 dev enp0s3`             |assigns 10.0.2.15 IP address to enp0s3 network interface|
+|`$ ip link set enp0s3 up`                              |activates the network interface named enp0s3|
 
 ### NET-TOOLS (Legacy)
 
-1. ethtools - ethernet settings for a network interface.
-2. ifconfig - IP address and netmask for a network interface
-3. iwconfig - SSID and key for a wireless interface
-4. route - default router address
+---
 
-#### ethtool
+**`ethtool `**`[option] [interface] [argument+++]`\
+-->  Displays or configures **Ethernet device** settings ( speed, duplex mode, auto-negotiation, etc... ) for a network interface.
 
-`$ ethtool enp0s3`\
-display current config settings for **enp0s3**
+|Example                                                |Description|
+|-                                                      |-|
+|`$ ethtool enp0s3`                                     |display current config settings for **enp0s3**|
+|`$ ethtool -s enp0s3 autoneg on speed 1000 duplex full`|set the **speed** at 1000Mb/s, the **duplex** mode to full and<br>the **auto-negotiation** to on for the enp0s3 device|
 
-`$ ethtool -s enp0s3 autoneg on speed 1000 duplex full`\
-sets the **speed** at 1000Mb/s, the **duplex** mode to full and the **auto-negotiation** to on for the enp0s3 device.
+---
 
-#### ifconfig
+**`ifconfig `**`[interface] [option] [argument+++]`\
+--> Displays or configures **network interfaces** ( IP address, netmask, and enabling/disabling interfaces ). *Deprecated*.
 
-`$ ifconfig`\
-display status of network interfaces.
+|Example                                                |Description|
+|-                                                      |-|
+|`$ ifconfig`                                           |display status of network interfaces|
+|`$ ifconfig enp0s3 down 10.0.2.1 netmask 255.255.255.0`|set network address and subnet for a network interface|
 
-`$ ifconfig enp0s3 down 10.0.2.1 netmask 255.255.255.0`\
-set network address and subnet for a network interface.
+> can be used for troubleshooting.
+>```
+>   $ ifconfig eth0
+>   RX packets 123456 errors 0 dropped 5 overruns 0 frame 0
+>   TX packets 654321 errors 0 dropped 2 overruns 0 carrier 0 collisions 0
+>```
 
-can be used to monitor dropped packets , collisions , etc for troubleshooting.
+---
 
-#### route
+**`route `**`[option] [command] [argument+++]`\
+--> Displays or modifies the IP routing table ( default gateway ). *deprecated*.
 
-`$ route`\
-show kernal routing table.
+|Example                                    |Description|
+|-                                          |-|
+|`$ route`                                  |show kernal routing table|
+|`$ route add 192.127.10.18 gw 192.168.1.2` |add route to 192.127.10.18 trough gateway 192.168.1.2|
 
-`$ route add 192.127.10.18 gw 192.168.1.2`\
-add route to 192.127.10.18 trough gateway 192.168.1.2.
+---
 
-#### iwconfig
+**`iwconfig `**`[interface] [argument+++]`\
+--> Configures wireless network interfaces ( SSID, mode, frequency, and encryption key ).
 
-`$ iwconfig wlan0 essid "MyWifi" key s:pass123`\
-s: is used to specify key in ASCII otherwise it has to be in Hex.
+|Example                                            |Description|
+|-                                                  |-|
+|`$ iwconfig wlan0 essid "MyWifi" key s:pass123`    |**s:** is used to specify key in ASCII otherwise it has to be in Hex|
 
-## ADDITIONAL NETWORK FEATURES
+---
 
-### DHCP
+# ADDITIONAL NETWORK FEATURES
 
-1. dhcpd
-2. dhclient
-3. pump
+**DHCP**
+--> automatically assigns IP addresses and other network configuration parameters.
 
-### BONDING
+|Program        |Purpose|
+|-              |-|
+|**dhcpd**      |server daemon — a background service that provides DHCP services on a network|
+|**dhclient**   |DHCP client daemon in Linux and Unix-like systems|
+|**pump**       |Lighter weight and simpler DHCP client daemon Often used in embedded systems|
 
-aggregate multiple interfaces in to one virtual device.
+---
 
-bonding types,
+**BONDING**
+--> aggregate multiple interfaces in to one virtual device.
+
+**bonding types,**
 - load balancing - sharing the traffic between interfaces
 - aggregation - interfaces are combined to create one large pipe
 - active / passive - one is live while other is backup
 
-bonding modes,
+**bonding modes,**
 
-    0   balance-rr      load balancing and fault tolerance using interfaces in a round robin approch.
-    1   active-backup   one primary, one backup.
-    2   balance-xor     load balancing and fault tolerance using seperate interfaces to recieve and transmit.
-    3   broadcast       transmit on all interfaces.
-    4   802.3ad         aggregate all to one connection.
-    5   balance-tlb     load balancing and fault tolerance using interfaces based on current transmit load on each interface.
-    6   balance-alb     load balancing and fault tolerance using interfaces based on current recieve load on each interface.
+| Mode Number   | Mode Name             | Description|
+|-              |-                      |-|
+| 0             | **balance-rr**        | Load balancing and fault tolerance using interfaces in a round-robin approach.|
+| 1             | **active-backup**     | One active interface and one backup interface; backup takes over if the active fails.|
+| 2             | **balance-xor**       | Outgoing interface is selected based on a ahash of XOR of source and destination MAC addresses. recieving interface is selcted by the switch.|
+| 3             | **broadcast**         | Transmit packets on all interfaces; provides fault tolerance but no load balancing.|
+| 4             | **802.3ad**           | IEEE 802.3ad Dynamic Link Aggregation (LACP); aggregates multiple interfaces into one logical channel.|
+| 5             | **balance-tlb**       | Adaptive transmit load balancing; balances outgoing traffic based on current load on each interface.|
+| 6             | **balance-alb**       | Adaptive load balancing; includes balance-tlb plus receive load balancing (requires special driver support).|
 
-`$ modprobe bonding` > load bonding module. creates **bond0** interface.
+|Example                                |Description|
+|-                                      |-|
+|`$ modprobe bonding`                   |load bonding module. creates **bond0** interface|
+|`$ ip link add bond0 type bond mode 4` |define bond type|
+|`$ ip link set eth0 master bond0`<br>`$ ip link set eth1 master bond0`|add **eth0** and **eth1** to the bond|
 
-`$ ip link add bond0 type bond mode 4` > define bond type.
+---
 
-`$ ip link set eth0 master bond0` / `$ ip link set eth1 master bond0` > add **eth0** and **eth1** to the bond.
+**NETCAT**
+--> enables reading, writing, and transferring data across network connections using TCP or UDP.
 
-### NETCAT
+**`netcat`** / **`nc`**
 
-**netcat** can act as a server or client to send / recieve packets using TCP (default) or UDP.
+| Option    | Description|
+|-          |-|
+| **-4**   | Use only IPv4.|
+| **-6**   | Use only IPv6.|
+| **-C**   | Use carriage return and linefeed combination at the end of lines.|
+| **-D**   | Enable socket debugging.|
+| **-d**   | Do not read from STDIN.|
+| **-h**   | Display help.|
+| **-i**   | Delay interval between text sent and received.|
+| **-k**   | Continue listening for incoming connections after the current one ends.|
+| **-l**   | Listen for a connection instead of initiating one.|
+| **-n**   | Do not use DNS lookups.|
+| **-p**   | Specify the local port to use.|
+| **-r**   | Use random source and/or destination ports.|
+| **-S**   | Enable MD5 signature (on supported systems).|
+| **-s**   | Specify the IP address of the interface to use for sending packets.|
+| **-T**   | Specify the Type of Service (ToS) for the connection.|
+| **-t**   | Reply to Telnet protocol options sent by the server.|
+| **-U**   | Use Unix domain sockets instead of network sockets.|
+| **-u**   | Use UDP instead of TCP.|
+| **-v**   | Enable verbose mode.|
+| **-w**   | Set timeout for inactive connections.|
+| **-X**   | Use SOCKS or HTTP proxy server protocols.|
+| **-z**   | Zero-I/O mode: used for scanning listening applications (no data sent).|
 
-can be **'netcat'** or **'nc'** depending on the distro.
+> **TEST HTTP SERVER**
+>```
+>    printf "GET / HTTP/1.0\r\n\r\n" | nc richblum.com 80
+>```
+> Recieve raw HTTP & HTML reponse.
 
-    -4      only use IPv4.
-    -6      only use IPv6.
-    -C      use carriage return & linefeed combo at the end of lines.
-    -D      enable socket debugging.
-    -d      do not read from STDIN.
-    -h      help.
-    -i      delay interval between text sent and recieved.
-    -k      continue listning for incomming connections after current connection terminates.
-    -l      listen for a connection instead of initializing one.
-    -n      do not use DNS lookups.
-    -p      specifies the port used.
-    -r      use random source and / or destination port.
-    -S      enable MD5 signature.
-    -s      specify IP address of interface used for sending packets.
-    -T      specify ToS (type of service) used for connection.
-    -t      reply to telnet protocol options sent from servers.
-    -U      use Unix domain sockets instead of network sockets.
-    -u      use UDP instead of TCP.
-    -v      enable verbose mode.
-    -w      timeout for inactive conections.
-    -X      use SOCK or HTTP proxy server protocols.
-    -z      scan for listning applications.
+> **SENDING / RECIEVING  TEXT**
+>```
+>    Robert :   nc -l 8000
+>    Adam   :   nc Robert 8000
+>    Adam   :   Hello           --> displayed on Robert screen
+>    Robert :   Hi              --> displayed on Adam screen.
+>```
 
+> **SENDING FILES**
+>```
+>    system 1   :   `nc -l 8000 > file2`        --> listen for any incomming data and store in file1
+>    system 2   :   `nc Robert 8000 < file1`    --> send file2 to host:Robert port:8000
+>```
 
-`$ printf "GET / HTTP/1.0\r\n\r\n" | nc richblum.com 80`\
-get HTTP and HTML reponse.
-
-> **SENDING TEXT**\
-> system 1 :  nc -l 8000 \
-> system 2 :  nc *TargetHostName* 8000 \
-> any text typed into system 2 will display on system 1.
-
-
-> **SENDING FILES**\
-> system 1 : nc -l 8000 > recievedfile.txt\
-> system 2 : nc *TargetHostName* 8000 < sentfile.txt\
-> system 1 will recieve the file.
+---
 
 ## NETWORK TROUBLESHOOTING
 
-### CONNECTIVITY
+**CONNECTIVITY**
 
-> ping / ping6
+**`ping` / `ping6 `**\
+--> test connectivity between devices over a network using **ICMP** / **ICMPv6** Echo Request.
 
-ping sends ICMP packets to the remote host.
+|Example                                        |Description|
+|-                                              |-|
+|`$ ping -c 4 google.com`                       |**-c** option to limit the number of operations or **CTRL+C** to terminate|
+|`$ ping6 fe80::c418:2ed0:aead:cbcd:%enp0s3`    |in the ping6 command the **outgoing interface** must be specified|
 
-`$ ping -c 4 google.com` < **-c** option to limit the operations or **CTRL+c** to terminate\
-`$ ping6 fe80::c418:2ed0:aead:cbcd:%enp0s3` **< in the ping6 command the outgoing interface must be specified**
+---
 
-> traceroute
+**`traceroute`**\
+--> track the path that packets take from source to a destination host.
 
-use ICMP packets to trace the hops to the remote host.
+|Example                    |Description|
+|-                          |-|
+|`$ traceroute google.com`  |detect hop count, hostname/IP of each router, three round-trip times (in milliseconds) for each router|
 
-#### MTR
+---
 
-mtr combine ping and traceroute to document network connectivity.
+**`mtr`**\
+--> network diagnostic tool that combines the functionality of both ping and traceroute.
 
-### NAME RESOLUTION
+|Example            |Description|
+|-                  |-|
+|`$ mtr google.com` |show packet stats, time stats, etc...|
 
-> host
+---
 
-`$ host www.linux.org`
+**NAME RESOLUTION**
 
-return all IP addresses associated with the host name, on the DNS server.
+**`host`**\
+--> translates domain names into IP addresses (**forward lookup**) and IP addresses into domain names (**reverse lookup**).
 
-`$ host 98.138.219.231`
+|Example                    |Description|
+|-                          |-|
+|`$ host www.linux.org`     |return all IP addresses associated with the host name, on the DNS server|
+|`$ host 98.138.219.231`    |attempt to find the host name for given the IP address|
 
-attempt to find the host name for given the IP address.
+---
 
-> dig
+**`dig`**\
+--> query DNS servers and troubleshoot DNS issues.
 
-`$ dig www.linux.org`
+|Example                    |Description|
+|-                          |-|
+|`$ dig www.linux.org`      |display all DNS records and information for a given host name|
+|`$ dig www.linux.org MX`   |display all **Mail Service** related DNS records for the host name|
 
-display all DNS records and information for a given host name.
+---
 
-`$ dig www.linux.org MX`
+**`nslookup`**\
+--> interactive prompt, query DNS servers for information about hostnames, IP addresses, and other DNS records.
 
-display all **Mail Service** related DNS records for the host name.
-
-> nslookup
-
-`$ nslookup`
+    $ nslookup
 
     > www.google.com
     server :    192.168.1.254
@@ -266,60 +310,62 @@ display all **Mail Service** related DNS records for the host name.
     server :    ...
     address :   ...
 
+---
 
-provide an interactive prompt to look up information on multiple domains.
+**`whois`**\
+--> retrieve domain registration and ownership information from **WHOIS** databases.
 
-> whois
+|Example                    |Description|
+|-                          |-|
+|`$ whois linux.com`        |connect to **centralized internet domain registry** to request information|
 
-`$ whois linux.com`
+---
 
-attempts to connect to **centralized internet domain registry** to request information on who registered the domain name.
+**ADVANCED NETWORK TROUBLESHOOTING**
 
-### ADVANCED NETWORK TROUBLESHOOTING
+**`netstat`**`[option]`\
+--> display network connections, routing tables, interface statistics, and networking protocol details. *(depricated)*.
 
-> netstat
+|Option     |Description|
+|-          |-|
+|**-t**     |list all open tcp connections|
+|**-u**     |list all open udp connections|
+|**-l**     |list applications and ports they are listening to|
+|**-s**     |display stats for different types of packets used by the system (IP, Icmp, Tcp, Udp, IpExt, ...)|
 
-list all open network connections.
+---
 
-`$ netstat -u` < list all UDP connections
+**EXAMINING SOCKETS**
 
-    -t      list all open tcp connections.
-    -u      list all open udp connections.
-    -l      list applications and ports they are listening to.
-    -s      display stats for different types of packets used by the system (IP, Icmp, Tcp, Udp, IpExt, ...). 
+**`ss `**`[option]`\
+--> faster replacement for **netstat**, used to display detailed information about network sockets.
 
+| Option    | Description|
+|-          |-|
+| **-4**    | Display only IPv4 sockets|
+| **-6**    | Display only IPv6 sockets|
+| **-t**    | List TCP sockets|
+| **-u**    | List UDP sockets|
+| **-l**    | List listening sockets|
+| **-e**    | Show detailed information, including user|
+| **-n**    | Show numerical addresses instead of resolving names|
+| **-r**    | Display routing table|
+| **-s**    | Show summary statistics|
+| **-p**    | Show process using the socket|
 
-### EXAMINING SOCKETS
+---
 
-> ss
+**MONITORING THE NETWORK**
 
-display a list of all active sockets.
+**`tcpdump`**\
+--> capture and inspect network traffic,  rudementary decoding of packets, basic filters for hosts, clients, network sessions.
 
-`$ ss -anpt` < display established listning connections and associated processes.
+---
 
-    -t      list tcp sockets.
-    -u      list udp sockets.
-    -l      list listening sockets.
-    -e      detailed info including user.
-    -n      show numerical addresses instead of resolving.
-    -r      show routing table.
-    -s      summary stats.
-    -4      ipv4 sockets
-    -6      ipv6 sockets.
-    -p      show process info.
-    -P      show process stats.
+**`wireshark`**\
+--> network protocol analyzer with a graphical user interface.
 
-### MONITORING THE NETWORK
+---
 
-> tcpdump
-
-legacy tool for capturing and rudementary decoding of packets.\
-has basic filters for hosts, clients, network sessions.
-
-> wireshark
-
-graphical tool for advanced network ananlysis.
-
-> tshark
-
-wireshark cli.
+**`tshark`**\
+--> cli for wireshark.

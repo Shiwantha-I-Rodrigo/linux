@@ -1,327 +1,249 @@
-# GUI
+# GRAHICAL USER INTERFACE
 
-on linux, GUI is a series of components working together to provide a graphical interface.
+**GUI** is a series of components working together to provide a graphical interface.
 
 ## DESKTOP ENVIRONMENT
 
-1. desktop settings
+| **Object**            | **Description** |
+| -                     | - |
+| **Desktop Settings**  | Tools or programs that allow users to configure the appearance and behavior of the desktop environment.|
+| **Display Manager**   | The graphical login screen that manages user sessions and authentication.|
+| **File Manager**      | A graphical application used to browse, organize, and manage files and folders.|
+| **Icons**             | Visual representations of files, applications, or system functions.|
+| **Favourites Bar**    | A section of the interface that holds shortcuts to frequently used files or applications.|
+| **Launch**            | A feature or tool used to search for and open applications, files, or system settings.|
+| **Menus**             | Interface elements, often accessed via an icon, that list actions such as opening, saving, or managing files.|
+| **Panels**            | Narrow, rectangular bars typically located at the edges of the screen, containing menus, system indicators, or application launchers.|
+| **System Tray**       | A section of a panel that provides quick access to system controls, notifications, and background applications.|
+| **Widgets**           | Small, interactive elements (e.g., applets, screenlets) that display information or provide quick access to specific functions.|
+| **Window Manager**    | Software that controls how application windows are displayed, moved, and interacted with on the desktop.|
 
-programs that allow configuration changes to the desktop environment.
+---
 
-2. display manager
+| **Component**     | **GNOME (1999)**                  | **KDE Plasma (1996/1998)**| **Cinnamon (2011)**       | **MATE (2011)** |
+|-                  |-                                  |-                          |-                          |-|
+| Display Manager   |GNOME Display Manager (GDM)        | SDDM                      | LightDM                   | LightDM|
+| File Manager      |GNOME Files (formerly Nautilus)    | Dolphin                   | Nemo (Nautils Fork)       | Caja (Nautils Fork)|
+| Favourite Bar     |GNOME Shell dash                   | Inside Application Menu   | Inside Application Menu   | Inside Application Menu|
+| Widgets           |(Uses extensions, not traditional) | Plasmoids                 | Cinnamon Spices           | Screenlets|
+| Window Manager    |Mutter                             | KWin                      | Muffin (Mutter Fork)      | Marco|
 
-login screen.
-
-3. file manager
-
-programs allowing file maintenance activities graphically.
-
-4. icons
-
-image representation of a file or application.
-
-5. favourites bar
-
-window area with icons of files or applications used regularly.
-
-6. launch
-
-allow searching for applications and files.
-
-7. menus
-
-typically accesed via an icon. may contain file actions.
-
-8. panels
-
-slim and rectangulat area at the top, bottom or side of the desktop.
-
-9. system tray
-
-special menu attached to a panel to control system.
-
-10. widgets
-
-applets, scrrenlets , etc provide information or functionality of a program and quckly accessible though the desktop.
-
-11. window manager
-
-determine how windows are presented on the desktop.
-
-### GNOME
-
-- 1990s
-- CentOS / Ubuntu
-- GNOME 3 ( aka GNOME Shell)
-
-.
-
-    display manager     GNOME Display Manager (GDM).
-    file manager        GNOME Files (formerly Nautils).
-    favourites bar      GNOME Shell dash.
-    window manager      Mutter.
-
-### KDE Plasma
-
-- 1996 start
-- 1998 release
-
-.
-
-    display manager     SDDM.
-    file manager        Dolphin.
-    favourite bar       inside application menu.
-    widgets             plasmoids.
-    window manager      Kwin.
-
-### CINNAMON
-
-- 2011
-- fork of GNOME3
-
-.
-
-    display manager     LightDM.
-    file manager        Nemo.(Nautils Fork)
-    favourites bar      inside application menu.
-    Widgets             Cinnamon Spices.
-    window manager      Muffin.(Mutter fork).
-
-### MATE
-
-- 2011
-- fork of GNOME2
-
-.
-
-    display manager     LightDM.
-    file manager        caja.(Nautils Fork)
-    favourites menu     via application menu launcher.
-    window manager      Marco.(Metacity fork).
+---
 
 ## ACCESSIBILITY
 
-    **Visualy Impaired**
+**VISUALLY IMPAIRED**
 
-    Cursor Blinking     inc. cursor blinking rate.
-    Cursor Size         inc. cursor size.
-    High Contrast       inc. brightness of windows, darken edges, text and cursor.
-    large Text          inc. font size.
-    Screen Reader       read the ui out loud.
-    Sound Keys          beeps when caps lock or num lock is on.
-    Zoom                magnify the screen or a portion of the screen.
+| Feature           | Description |
+|-                  |-|
+| Cursor Blinking   | Increases the cursor blinking rate for better visibility.|
+| Cursor Size       | Enlarges the cursor to make it easier to see.|
+| High Contrast     | Enhances contrast by brightening windows and darkening edges, text, and cursor.|
+| Large Text        | Increases the system font size for better readability.|
+| Screen Reader     | Reads the user interface out loud for non-visual access.|
+| Sound Keys        | Plays a sound when Caps Lock, Num Lock, or Scroll Lock is activated.|
+| Zoom              | Magnifies the entire screen or a selected portion of it.|
 
-    **Hearing Impaired**
+**HEARING IMPARED**
 
-    Visual Flash        produce a flash on a window or screen on system sounds.
+| Feature       | Description |
+|-              |-|
+| Visual Flash  | Displays a visual alert (e.g., screen flash) when system sounds are triggered. |
 
-    **physically impaired**
+**PHYSICALLY IMPARED**
 
-    Bounce Keys                 componsate for single key pressed multiple times.
-    Double-Click Delay          inc. amount of time alowed for a double click.
-    Gestures                    activate programs via combining mouse clicks and keyboard presses.
-    Hover Click                 trigger click on hover.
-    Mouse Keys                  keyboard keys to emulate mouse functions.
-    Repeat Keys                 mod time to acknowledge key press and hold as repeated presses.
-    screen keyboard             virtual keyboard.
-    simulated secondary click   set a key to held along with mouse click to emulate secondery clicks.
-    slow clicks                 mod time to acknowledge as a key press.
-    sticky keys                 modifier keys (ctrl, shift, etc) maintain pressed status untilsubsequent key is pressed.
+| Feature                   | Description |
+|-                          |-|
+| Bounce Keys               | Ignores repeated keystrokes caused by accidentally pressing a key multiple times.|
+| Double-Click Delay        | Extends the time window allowed between clicks to register a double-click.|
+| Gestures                  | Launches programs using custom combinations of mouse clicks and keyboard keys.|
+| Hover Click               | Triggers a click when the pointer hovers over an item for a set duration.|
+| Mouse Keys                | Uses the keyboard to control the mouse pointer.|
+| Repeat Keys               | Adjusts how long a key must be held down before it repeats input.|
+| On-Screen Keyboard        | Provides a virtual keyboard that can be used with a mouse or alternative input.|
+| Simulated Secondary Click | Assigns a key to be held during a click to perform a right-click action.|
+| Slow Keys                 | Adds a delay before a keystroke is registered to prevent accidental presses.|
+| Sticky Keys               | Allows modifier keys (e.g., Ctrl, Shift) to remain active until another key is pressed.|
+
+---
 
 ## DISPLAY SERVER
 
-desktop environment ↔ window manager ↔ display server
+> **!** A **compositor** is a component of a graphical system that combines (composites)\
+> individual application windows into a single final image that is displayed on the screen.
 
-**compositor** a component of the display server is used to arrenge various elements\
-within a window and pass the final composit image to the client.
+<img src="images/x11_wayland.png">
 
->x11
+### WAYLAND SERVER
 
-                kernal
-                    ↑
-    x_client ↔ x_server
-                    ↓
-                compositor
+- Wayland is a modern replacement for the X11 display server.
+- It was introduced in 2009 to provide a simpler and more efficient protocol for compositors and clients.
+- Instead of the default Weston compositor, other compositors such as Arcan, Sway, Clayland, Lipstick, and more can be used with Wayland.
 
->wayland
-
-    wayland_client ↔ wayland compositor ↔ kernal
-
-### Wayland Server
-
-- replacement for x11 server
-- 2009
-- instead of weston(default) Arcan, Sway, Clayland, Lipstick,  etc.. compositors can be used with wayland.
-
-`$ echo $WAYLAND_DISPLAY`\
-if a response is returned a wayland display server is running.\
-else x11 may be running.
+> **!** CHECK IF WAYLAND IS RUNNING
+>```
+>    $ echo $WAYLAND_DISPLAY
+>```
+> - If this returns a value, it means a Wayland display server is active.
+> - If no response is returned, the system is likely running an X11 session.
 
 **TROUBLESHOOTING**
 
-in case of display issues,
-1. try an x11 session.
-2. check graphic card support for wayland.
-3. install weston compositor, if the current distro uses another.
+If you experience display problems, try the following steps:
+- Switch to an X11 session to see if the issue persists.
+- Verify that your graphics card supports Wayland.
+- If your current distribution uses a different compositor, try installing and running the Weston compositor.
 
-### X11
+---
 
-- 1980
-- CTRL+ALT+BackSpace to restart X11 session.
-- /etc/X11/xorg.conf
-    + typically not used anymore, session configurations on the fly by autodetecting hardware
-- incase autodetect fails,
-    + `$ sudo Xorg -configure` to generate the config file in current dir.
-    + move the file to proper dir.
-- xorg configuration file contains,
-    + input device - mouse / keyboard
-    + monitor - monitor configs
-    + modes - video mode
-    + device - sessions video card
-    + screen - resolution, color depth
-    + modules - modules to be loaded
-    + files - file paths for, fonts, layouts , etc...
-    + server flags - global X server options
-    + server layout - links input and output devices
+### X11 SERVER
+
+- X Window System originated in **1980**.
+- Press **CTRL + ALT + BackSpace** to restart the X11 server.
+- Xorg configuration file --> **/etc/X11/xorg.conf**
+
+> **!** This file is typically not edited manually anymore since most modern systems configure the session dynamically by autodetecting hardware.
+
+**Xorg configuration file sections include:**
+
+| **Section**       | **Description** |
+| -                 | - |
+| **Input Device**  | Settings for mouse and keyboard|
+| **Monitor**       | Monitor-specific configurations|
+| **Modes**         | Video modes|
+| **Device**        | Video card/session device settings|
+| **Screen**        | Screen resolution and color depth|
+| **Modules**       | Modules to be loaded by the server|
+| **Files**         | Paths to fonts, keyboard layouts, and other resources|
+| **ServerFlags**   | Global X server options|
+| **ServerLayout**  | Links input and output devices, defining the overall layout|
 
 **TROUBLESHOOTING**
 
-1. xdpyinfo
-    + information on xserver screen types, communication params, protocol extentions, etc...
-2. xwininfo
-    + information on windows, incase of no options an interactive mode to select windows.
-    + information such as width, height, color map id, etc...
-    + command will hang in case of wayland session.
+1. autodetection fail :
+    - Run `$ sudo Xorg -configure` to generate a configuration file in the current directory.
+    - Move the **generated file** to the appropriate directory, usually **/etc/X11/xorg.conf**.
+2. `xdpyinfo`
+    - information on xserver screen types, communication params, protocol extentions, etc...
+3. `xwininfo`
+    - information on windows, incase of no options an interactive mode to select windows.
+    - information such as width, height, color map id, etc...
+    - command will hang in case of wayland session.
+
+---
 
 ## REMOTE DESKTOPS
 
-when a fully functional desktop is required instead of SSH for a remote server,
-- VNC
-- Xrdp
-- NX
-- SPICE
+Used when a fully functional desktop is required instead of SSH for a remote server.
+
+- **VNC**
+- **Xrdp**
+- **NX**
+- **SPICE**
 
 ### VNC
 
-**Virtual Network Computing** employs remote frame buffer technology.
+**PROCESS**
 
-> typically display server on TCP port 5900 + n where n is the display number.
+| **Step**                      | **Description**|
+| -                             | - |
+| **1. Connection Initiation**  | Client connects to the server using TCP/IP, usually on port **5900 + display number** (ie. 5901 for display 1)<br>Alternatively display number can be directly given instead of port number|
+| **2. Protocol Negotiation**   | Client and server agree on the RFB **(Remote Framebuffer)** protocol version and choose an **authentication method**|
+| **3. Authentication**         | Authentication is performed ( no auth / password / TLS encryption )|
+| **4. Session Setup**          | Server sends the initial **framebuffer (screen content)** to the client. Client displays it in a window|
+| **5. Ongoing Communication**  | • **Server → Client**: Sends **screen updates** (only changed parts).<br>• **Client → Server**: Sends **keyboard and mouse input**|
 
-on cli point the *viewer* to hostname and tcp port,\
-alternatively display number can be directly given instead of port number.\
-enter the predetermined password for VNC.
-can also be accessed through a java enabled or HTML5 browser.
+<img src="images/vnc-min.png">
 
-two types of UI's
-1. persistent
-    - GUI state is saved for next unlock.
-2. static
-    - does not provide saved states.
+**PROs & CONs**
 
-+ PROS
-    - flexibility
-    - desktops availabe for multiple users
-    - persistent and static desktops
-    - provide desktops on demand
-    - ssh tunnel can be employed on top of wiever cli command
+| **Category**  | **Point**                     | **Description** |
+| -             | -                             | - |
+| **Pros**      | Flexibility                   | VNC can be used across different operating systems and environments|
+|               | Multi-user desktops           | Multiple users can access separate desktop sessions on the same server|
+|               | **Persistent/static desktops**| Persistent desktop sessions remain active even if the client disconnects, allowing users to resume work later.<br>Static desktops does not provide saved states |
+|               | On-demand desktops            | Desktops can be created dynamically as users connect|
+|               | SSH tunneling support         | VNC connections can be tunneled securely through SSH, including via the `vncviewer` CLI|
+| **Cons**      | No file or audio transfer     | VNC does not support local file mounting or audio redirection by default|
+|               | No printing support           | There is no built-in support for printing services over the VNC protocol|
+|               | No default encryption         | Traffic is unencrypted unless an SSH tunnel or external encryption is used|
+|               | Weak password security        | Passwords may be stored in plain text on the server, posing a security risk|
 
-+ CONS
-    - no file (local mounting) or audio transfer
-    - no printing service
-    - no default traffic encryption, must use openSSH
-    - password stored in plain text on server
 
-> cli command must be issued in a graphical session, else command will fail.
+> **!** cli command must be issued in a graphical user session, else command will fail.
 
-### Xrdp
+---
 
-- support RDP (Remote Desktop Protocol)
-- only server side RDp connection
-- use a rdesktop, freeFDP, MicrosoftRemoteDesktop, etc... client implementation.
+### XRDP
 
-> typically display server on TCP port 3389.
+- Provides support for **Remote Desktop Protocol (RDP)**
+- Operates as a **RDP server ( only server-side daemon )** on port **3389**.
+- Compatible with RDP clients such as **rdesktop, FreeRDP, Microsoft Remote Desktop** and others on the client side
 
-+ PRO
-    - use RDP which encrypts traffic with TLS
-    - wide range of client software.
-    - can connect to an existing connection (persistent).
-    - provide audio and file transfer (mounting local drives on remote system)
-    - /etc/xrdp/xrdp.ini
-        + set security_layer directive to negotiate to negotiate with client.
-            * tls - safe
-            * negotiate - potentialy unsafe
-            * rdp - unsafe
+| **Features**|
+| - |
+|xrdp uses the **Remote Desktop Protocol (RDP)**, which supports **TLS encryption** for secure traffic|
+|Compatible with a **wide range of RDP clients**, including Windows' built-in Remote Desktop, FreeRDP, Remmina, etc.|
+|Can **reconnect to existing desktop sessions**, allowing users to resume work without starting over|
+|Supports **audio redirection** and **mounting local drives** on the remote system for file transfer|
+|Main configuration is in **/etc/xrdp/xrdp.ini**|
+|**Security layer setting**<br>In **xrdp.ini**, the **security_layer** directive controls encryption negotiation<br>• **tls** : Encrypts the session with **TLS**<br>• **negotiate** : Tries to negotiate the best method with the client<br>• **rdp** :  Uses standard RDP encryption (NOT SECURE)|
+
+---
 
 ### NX
 
-- was open source until version 4
-- free derivitives exist (FreeNX, X2Go, ...).
-- compress x11 data to minimize data over network.
+* Was open source until version 4.
+* Free and open-source derivatives exist, such as **FreeNX**, **X2Go**, etc.
+* Compresses X11 data to reduce bandwidth usage over the network.
 
-+ PRO
-    - excelent response time, low latency over low bandwith.
-    - faster that VNC based products.
-    - traffic is encrypted with OpenSSH by default.
-    - support multiple users, through single port.
+|**Features**|
+|-|
+|Excellent responsiveness and low latency, even on low-bandwidth connections|
+|Faster than most VNC-based solutions|
+|Traffic is encrypted by default using **OpenSSH**|
+|Supports multiple users through a single network port|
+
+---
 
 ### SPICE
 
-- Simple Protocol for Independent Computing Environment.
-- made opensource by redhat.
-- like VNC provide connections to KVM virtual machines.
+* Simple Protocol for Independent Computing Environments.
+* An open-source protocol developed by **Red Hat**.
+* Similar to VNC, it provides remote desktop access to **KVM** virtual machines.
 
-+ PRO
-    - platform independent.
-    - can handle multiple clients.
-    - speeds similar to a local connection.
-    - comsumes low CPU.
-    - high quality video streams.
-    - live migration, no interruption in case the virtual machine is being migrated to a new host.
+|**Features**|
+|-|
+|Platform-independent|
+|Supports multiple simultaneous clients|
+|Delivers performance close to a local desktop experience|
+|Low CPU usage|
+|High-quality video streaming|
+|Supports **live migration**, allowing uninterrupted sessions when a VM is moved to a different host|
 
-### FORWARDING
+---
 
-providing security through SSH port forwarding (SSH tunneling). OpenSSH must be running and listening on port 22.
+## FORWARDING
 
-`$ systemctl is-active sshd`
+- providing security through SSH port forwarding (SSH tunneling).
+- **OpenSSH** service must be running and listening on **port 22**.
+- check config file for **"AllowTcpForwarding"** is set to "yes" --> **/etc/ssh/sshd_config** .
+- even if the **"AllowTcpForwarding"** is **commented out**, it is eanbled as it is the default behavior.
+- port forwarding can be,
+    + **local**
+    + **remote**
+    + **dynamic**
 
-`$ systemctl is-enabled sshd`
+| **Local Port Forwarding (LFP)**                                                   | **Remote Port Forwarding (RFP)** |
+| -                                                                                 | - |
+|Access a remote service from the local machine                                     | Allow a remote machine to access a service on the local machine|
+|**Local → Remote**                                                                 | **Remote → Local**|
+|Access a remote database as if it's running locally                                | Expose a local web server to the remote machine or others via SSH server|
+|1. SSH client opens a local port on your machine  <br> 2. Traffic sent to that port is encrypted <br> 3. SSH sends the traffic to the destination on the remote host| 1. SSH server opens a port on the remote side <br> 2. Traffic sent to that remote port is tunneled <br> 3. Tunnel delivers it to your local machine |
+|`ssh -L [local_port]:[remote_host]:[remote_port] user@ssh_server`                  | `ssh -R [remote_port]:[local_host]:[local_port] user@ssh_server`|
+|`ssh -L 3306:db.example.com:3306 -Nf user@ssh_server`                              | `ssh -R 8080:localhost:3000 -Nf user@ssh_server`|
+| • -L : local<br>• -N : no remote terminal<br>• -f : move to background after auth |• -R : remote<br>• -N : no remote terminal<br>• -f : move to background after auth|
 
-/etc/ssh/sshd_config < check config file for "AllowTcpForwarding" is set to "yes".
-
-> even if the "AllowTcpForwarding" is **commented out**, it is eanbled as it is the default behavior.
-
-port forwarding can be,
-    - local
-    - remote
-    - dynamic
-
-
-#### LOCAL
-
-1. data is sent from client to the client's OpenSSH server.
-2. data is encrypted.
-3. data is sent from client server (different outbound port) to the destination.
-
-`$ ssh -L 5901:127.0.0.1:5902 -Nf robert@remote1`\
-`$ ssh -L [local-port]:127.0.0.1:[remote-port] -Nf [user@RemoteHost]`
-
-- L < local
-- N < no remote terminal required.
-- f < move the ssh command to background after user authentication.
-- 5900 + n ports used with VNC
-
-
-#### REMOTE
-
-- the port forwarding method start at the destination host.
-
-`$ ssh -R 5901:127.0.0.1:5902 -Nf robert@client1`\
-`$ ssh -R [local-port]:127.0.0.1:[remote-port] -Nf [user@ClientHost]`
-
-- R < Remote
-
-### TUNNELING X11
-
-- /etc/ssh/sshd_config < check "x11Forwarding" is set to "yes">
-
-`$ ssh -X user@RemoteHost`
+> **!** ***X11 FORWARDING***\
+> **!** check config file for **"x11Forwarding"** is set to "yes" --> **/etc/ssh/sshd_config**\
+> **!** x11 forwarding : `$ ssh -X user@RemoteHost`

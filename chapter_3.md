@@ -1,340 +1,388 @@
 # MANAGING FILES
 
-## ls
-list files and directories
+> ***!* commands that support file chains are indicated with [ file+++ ]**.\
+> **`[command] [fie1] [file2] [file3] ...` --> `[command] [file+++]`**
 
-    -a --all            display all including hidden
-    -d --directory      show directory metadata instead of content
-    -F --classify       claasify each file using indicators
-    -i --inode          display files, folders with associated index numbers
-    -l                  display file, folder metadata
-    -R                  show folder content recursively
+**`ls `**`[option] [file+++|directory+++]`\
+--> list files and directories.
 
-    -lh                 show metadata in a more human readable format
+|Option |               |Description|
+|-      |-              |-|
+|-a     |--all          |display all including hidden|
+|-d     |--directory    |show directory metadata instead of content|
+|-F     |--classify     |claasify each file using indicators|
+|-i     |--inode        |display files, folders with associated inode numbers|
+|-l     |               |display file, folder metadata|
+|-R     |               |show folder content recursively|
+|-lh    |               |show metadata in a more human readable format|
 
-> some distributions use `ll` instead of `ls -lh`
+---
 
-## tree
-shows a tiered structure of files and folders
+**`tree `**`[option]`\
+--> shows a tiered structure of files and folders.
 
-## touch
-create a new file
+|Option     |Description|
+|-          |-|
+|-a         | show hidden files|
+|-d         | only directories|
 
-`$ touch file1 file2 file3`
+---
 
-## mkdir
-> a folder is just a file with pointers to various files locations (inode numbers)
+**`touch `**`[option] [file+++]`\
+--> create new empty files.
 
-`$ mkdir newdir`
+---
 
-`$ mkdir /home/newdir`
+**`mkdir `**`[option] [directory+++]`\
+--> create new directories.
 
-> use -p option to create dir's recursively `$ mkdir -p newdir/newdir`.
+|Option     |Description|
+|-          |-|
+|-p         | create parent directories, if doesn't exist|
+|-v         | verbose mode|
 
-> instead of `$ ls -F` use `$ mkdir -v` to verify the directory is created succesfully.
+> **!** a folder is just a file with pointers to various file locations (inode numbers).
 
-## cp
-copy files, folders
+---
 
-    -a --archive        recursive copy with file attributes preserved
-    -f --force          overwrite any existing files
-    -i --interactive    ask before overwriting
-    -n --no-clobber     dont overwrite existing files
-    -R -r  --recursive  recursive copy
-    -u --update         overwrite if source is newer
-    -v --verbose        detailed information
+**`cp `**`[option] [source+++] [destination]`\
+--> copy files, folders.
 
-`$ cp oldfile newfile`
+|Option |                   |Description|
+|-      |-                  |-|
+|-a     |--archive          |recursive copy with file attributes preserved|
+|-f     |--force            |overwrite any existing files|
+|-i     |--interactive      |ask before overwriting|
+|-n     |--no-clobber       |dont overwrite existing files|
+|-R / -r|--recursive        |recursive|
+|-u     |--update           |overwrite if source is newer|
+|-v     |--verbose          |verbose mode|
 
-## mv
-move files folders. options are mostly identical to `cp` command, but fewer. no `-a` or `-r`.
+> **!** to chain directories **-r** is required, not required for files.\
+> **!** `$ cp -r dir1 dir2 dir3 destination/`
 
-## rsync
+---
 
-    -a --archive        archive mode
-    -D                  retain device, special files
-    -g --group          retain file group
-    -h --human-readable numeric output in humanreadable
-    -l --links          copy symbolic links as symbolic links
-    -o --owner          retain file owner
-    -p --perms          retain file permissions
-       --progress       display file copy progress
-    -r --recursive      recusrive copy
-       --stats          display file transfer stats
-    -t --times          retain file mod times
-    -v --verbose        detailed command action information
+**`mv `**`[option] [source+++] [destination]`\
+--> move files, folders.
 
-> when copying over network `rsync` can be tunneled trhough `OpenSSH` to provide encryption.
+> **!** options are identical to `cp` command\
+> **!** excluding `-a` and `-r`.
 
-> the ***speedup*** information on the stats shows the portion of files that need to be updated, for instance 
-if the destination already contains 50% of the sorce files in latest versions only 50% need to be copied, 
-hence the speedup will be 2.
+---
 
-`$ rsync oldfile newfile`
+**`rsync `**`[option] [source+++] [destination]`\
+--> local sync
 
-`$ rsync sourcefolder/ destfolder/`
+**`rsync `**`[option] [source+++] [user]@[host]:[destination]`\
+--> remote push
 
-## rm
-remove files, folders
+**`rsync `**`[option] [user]@[host]:[source] [destination]`\
+--> remote pull
 
-    -d --dir            delete emplty directories.
-    -f --force          continue deleting even some files do not exit and do not ask before deleting files.
-    -i --interactive    ask before deleting files.
-    -I                  ask before deleting more than 3 files or when using -r option.
-    -r -R --recursive   delete recursively.
-    -v --verbose        detailed info.
+|Option     |                       |Description|
+|-          |-                      |-|
+|-a         |--archive              |archive mode **-a = -rlptgoD**|
+|-r         |--recursive            |recusrive|
+|-l         |--links                |preserve symbolic links|
+|-p         |--perms                |preserve permissions|
+|-t         |--times                |preserve timestamps|
+|-g         |--group                |preserve group|
+|-o         |--owner                |preserve owner|
+|-D         |--devices --specials   |preserve device & special files|
+|-h         |--human-readable       |human-readable output|
+|-v         |--verbose              |verbose mode|
+|-z         |--compress             |compress **only for transfer**|
+|-u         |--update               |skip newer files on destination|
+|           |--stats                |display file transfer stats|
+|           |--progress             |display sync progress|
+|           |--delete               | **!** delete extra files at destination|
 
-`$ rm file`
+> **!** `rsync` can be tunneled through **OpenSSH** to provide encryption on remote syncs.\
+> **!** `$ rsync -e ssh source/ user@host:/destination/`\
+> **!** `$ rsync -e "ssh -p 2221" source/ user@host:/destination/` --> ssh on port 2221
 
-`$ rm -r directory`
+> **!** the ***speedup*** stat indicate the portion of data actually copyied compared to copying everything.\
+> **!** **speedup : 3.0** had to copy only 33% of the source data to sync with the destination.
 
-## rmdir
+> **!** ommiting the trailing **/** will copy just the directory and not the content.
 
-`$ rmdir directory/`
+---
 
-options are similar to `rm` command.
+**`rm `**`[option] [file+++ | directory+++]`\
+--> delete files & folders.
 
+|Option     |                   |Description|
+|-          |-                  |-|
+|-d         |--dir              |remove empty directories only|
+|-f         |--force            |ignore non-existence & other prompts|
+|-i         |--interactive      |prompt before every removal|
+|-I         |                   |prompt before removing more than 3 files or when using -r option|
+|-r / -R    |--recursive        |recursively|
+|-v         |--verbose          |verbose mode|
 
-# LINKING FILES AND DIRECTORIES
+> **!** `$ rmdir directory/` == `$ rm -d directory/`
 
-the original file must exist before creating links.
+---
 
-## Hard Link
+## HARD LINKS Vs SOFT LINKS
 
-**one physical file (same inode number) with multiple names**.
+|Hard Link                                                  |Soft Link|
+|-                                                          |-|
+|file1 ---> [inode 19229] <--- file2                        |file2 ---> file1 ---> [inode 27236]|
+|`$ ln file1 file2`                                         |`$ ln -s file1 file2`|
+|One physical file with multiple names                      |Point to a filename|
+|deleting one link doesn't affect the inode                 |deleting the original file removes the inode|
+|                                                           |deleting the original creates a "dangling link"|
+|the "original" file is also just a Hard Link to the inode  ||
+|all the links have the same data                           |different links ave different data|
+|must exist in same filesystem                              |can exist in different filesystems|
+|increase link count                                        |no change to link count|
 
-file1 --------> [inode 19229] <-------- file2
-
-`$ ln file1 file2`
-
-+ deleting any one file does not delete the inode.\
-+ files share the same inode number.\
-+ files contain same data.\
-+ must exist on same file system.
-
-## Soft Link
-
-**point to a file name**
-
-file2 --------> file1 --------> [inode 272736]
-
-`$ ln -s file1 file2`
-
-+ deleting linkfile does not delete original.\
-+ deleting original does not delete the linkfile (dangling link, deadlink).\
-+ does not share the same inode number.\
-+ files contain different data.\
-+ can exist in different file systems.
-
-> use `ls -ogi` to determine the number of hardlinks to a file
-
+    # Determine the hardlink count of files
     $ ls -ogi
         total 23421
-        23453426 -rw-rw-r-- 2 123456 Aug 24 18:09 HardLinkFileOriginal
-        23453426 -rw-rw-r-- 2 123456 Aug 24 19:10 HardLink1
-        17642378 -rw-rw-r-- 1 123456 Aug 24 18:20 SoftLinkFileOriginal
-        65436743 lrwxrwxrwx 1     38 Aug 24 19:11 SoftLink1
+        23453426    -rw-rw-r--    2     123456  Aug 24 18:09    HardLinkFileOriginal
+        23453426    -rw-rw-r--    2     123456  Aug 24 19:10    HardLink1
+        17642378    -rw-rw-r--    1     123456  Aug 24 18:20    SoftLinkFileOriginal
+        65436743    lrwxrwxrwx    1         38  Aug 24 19:11    SoftLink1
+        [inode]     [perms]    [links]  [size] [modified date]  [filename]
+    
+    #(-og) --> omit group & owner columns
 
-        [inode] [perms] [links] [size] [modified date] [filename]
+---
 
-*softlinks does not increase link count or reflect original file attributes.*
+## READING FILES
 
-*softlinks does not share the same inode number*
+**`cat `**`[option] [file+++]`\
+--> direct the content of file to STDOUT.
 
-**total** is the number of blocks used in the disk by the files.
+|Option     |                       |Description|
+|-          |-                      |-|
+|-n         |                       |display line numbers|
+|-b         |--number-nonblank      |display line numbers for only for lines with text, override **-n**|
+|-v         |--show-nonprinting     |display non printing chars|
+|-E         |--show-ends            |display line endings with **$**|
+|-e         |                       |display non printing chars with line ends, same as **-vE**|
+|-T         |--show-tabs            |display tabs|
+|-t         |                       |display non printing chars with tabs, same as **-vT**|
+|-s         |--squeeze-blank        |condense consecutive blank lines|
 
-## Reading Files
+---
 
-### cat
+**`pr `**`[option] [file+++]`\
+--> originally used for formating files for printing.
 
-    -n                      display line numbers.
-    -b --number-nonblank    display line numbers for only for lines with text, override `-n`.
-    -v --show-nonprinting   display non printing chars.
-    -E --show-ends          display line endings with `$`.
-    -e                      display non printing chars with line ends, same as `-vE`.
-    -T --show-tabs          display tabs.
-    -t                      display non printing chars with tabs, same as `-vT`.
-    -s --squeeze-blank      condense consecutive blank lines.
+|Option     |                   |Description|
+|-          |-                  |-|
+|-x         |--columns=x        |format output as multiple columns (x columns)|
+|-lx        |--length=x         |page length.(default 66)|
+|-wx        |--width=x          |page width. (default 72)|
+|-nzx       |--number-lines=zn  |number all lines <br> use **z** as sepertaor between number and the line <br> print **n** spaces before the number|
+|-m         |--merge            |display multiple files as columns, truncate lines|
+|-sx        |--seperator=x      |change the column seperator to ***x* CHAR** (default TAB) <br> **turn off truncation** for all columns <br> **use *-w* setting to avoid messy output**|
+|-Sxxx      |--sep-string=xxx   |change the column seperator to ***xxx* STRING** <br> has no effect on line truncation|
+|-t         |--omit-header      |omit file header and trailer|
 
-### pr
+> **!** `$ pr -m file1 file2`\
+> **!** without the -m option files will be in seperate pages sequentially.
 
-> originally used for formating files for printing.
+---
 
-    -n  --columns=n     format text file to have `n` number of columns.
-    -ln --length=n      format the page length.(default 66)
-    -m  --merge         display multiple files as columns, truncate lines.
-    -sx --seperator=x   change the column seperator to `x`.(override `-w` setting).
-    -t  --omit-header   omit file header and trailer.
-    -wn --width=n       format page width. (default 72).
+**`head `**`[option] [file+++]`\
+--> display top lines.
 
-`$ pr -2 -l25 mytext` *display text in two columns with a page containing 25 lines*.
+|Option                 |Description|
+|-                      |-|
+|-n x --lines=x         |display top **x** lines (default 10)|
 
-`$ pr -m mytext yourtext` *diplay two files side by side*.
+|Value      |Result|
+|-          |-|
+|**-n 4**   |top 4|
+|**-4**     |top 4|
+|**-n +4**  |top 4|
+|**-n -4**  |exclude bottom 4|
+|**+4**     |error|
 
-### grep
+---
 
-    -i --ignore-case    ignore case when searching.
+**`tail `**`[option] [file+++]`\
+--> display bottom lines.
 
-`$ grep -i tommy /etc/passwd`
+|Option                 |Description|
+|-                      |-|
+|-n x --lines=x         |display bottom **x** lines (default 10)|
 
-### head
+|Value      |Result|
+|-          |-|
+|**-n 4**   |bottom 4|
+|**-4**     |bottom 4|
+|**-n -4**  |bottom 4|
+|**-n +4**  |print from 4th line **(exclude top 3)**|
+|**+4**     |print from 4th line **(exclude top 3)**|
 
-    -n x --lines=x      display top `x` lines.
+---
 
-`$ head -n 4 /etc/passwd`     *display top 4 lines*\
-`$ head -4 /etc/passwd`       *display top 4 lines*\
-`$ head -n +4 /etc/passwd`    *display top 4 lines*\
+## PAGERS
 
-`$ head -n -4 /etc/passwd`    *exclude last 4 lines*\
-`$ head +4 /etc/passwd`       ***error***
+**`more `**`[option] [file+++]`\
+--> **pager**, view the contents of files one page (screen) at a time.
 
-### tail
+|Shortcut       |Action|
+|-              |-|
+|spacebar       |forward one page|
+|enter          |forward one line|
+|q / Q          |quit|
 
-similar to `head` command.
+> **!** read the whole file at start (therefore slower compared to **less**).\
+> **!** show file progress.
 
-`$ tail -n 4 /etc/passwd`     *display last 4 lines*\
-`$ tail -4 /etc/passwd`       *display last 4 lines*\
-`$ tail -n -4 /etc/passwd`    *display last 4 lines*\
+---
 
-`$ tail -n +4 /etc/passwd`    *exclude top 3 lines*\
-`$ tail +4 /etc/passwd`       *exclude top 3 lines*
+**`less `**`[option] [file+++]`\
+--> **pager**, view the contents of files one page (screen) at a time.
 
-## Reading File Portions
+|Shortcut       |Action|
+|-              |-|
+|spacebar       |forward one page|
+|enter          |forward one line|
+|q / Q          |quit|
+|k / ↑          |Scroll **up** one line|
+|j / ↓          |Scroll **down** one line|
+|/pattern       |Search **forward** for a pattern|
+|?pattern       |Search **backward** for a pattern|
+|n              |Repeat **last search** (same direction)|
+|N              |Repeat **last search** (opposite direction)|
 
-### more / less
+---
 
-use `more` / `less` utilities to read text formatted as pages.\
-**spacebar** to forward through pages.\
-**q** to exit.
+## FILE ANALYSIS
 
-`less` has more features compared to `more`.
-+ doesn't read the whole file prior to displaying (faster).
-+ use **up arrow** / **down arrow** to traverse the file.
-+ **?** to search backward and **/** to search forward.
-
-> `more` display file progress, while `less` does not.
-
-## Finding Information
-
-### file
+**`file `**`[option] [file+++]`\
+--> determine file type.
 
     $ file myfile
-        myfile : Bourne-Again Shell script, ASCII text executable
+    myfile : Bourne-Again Shell script, ASCII text executable
 
-### stat
+> **!** passing a directory to `file` will tell you that it's a directory.
+
+---
+
+**`stat `**`[option] [file+++]`\
+--> display detailed information about files or directories.
 
     $ stat myfile
-        file : myfile
-        size : ....     Blocks : .....
-        Device : ....   Inode : .....   Links : ....
-        Access : ....
-        Uid : ....
-        Gid : ....
-        Access : ....
-        Modify : ....
-        Change : ....
-        Birth  : ....
+    file : myfile
+    size : ....     Blocks : .....
+    Device : ....   Inode : .....   Links : ....
+    Access : ....
 
-### diff
+---
 
-    -q  --brief                     if files are different just issue a simple message.
-    -r  --recursive                 compare all subdirectories as well.
-    -s  --report-identical-files    if files are similar just issue a message.
-    -W n    --width n               display a width maximum of n chars in output.
-    -y  --side-by-side              two columns.
-.
+**`diff `**`[option] [main] [reference]`\
+--> compare two files or directories.
+
+|Option     |                           |Description|
+|-          |-                          |-|
+|-q         |--brief                    |if files are different just issue a simple message|
+|-s         |--report-identical-files   |if files are similar just issue a message|
+|-y         |--side-by-side             |two columns|
+|-r         |--recursive                |compare all subdirectories as well|
+|-W n       |--width n                  |display a maximum width of n chars in output|
 
     $ diff text1 text2
 
-        1d0
-        < lear
+    1d0
+    < lear
 
-        1a3
-        > amal
+    1a3
+    > amal
 
-        2,4c2,4
-        < teed
-        < eu546n
-        ---
-        > town
-        > stration
+    2,4c2,4
+    < teed
+    < eu546n
+    ---
+    > town
+    > stration
 
 - delete the **1st** line from main file (text1).
-- add after **1st** line (as the 2nd line) to main file (text1) the **3rd** line from other file (text2).
-- change lines **2 and 4** of main file (text1) to match **2 and 4** of other file (text2).
+- add after **1st** line (as the 2nd line) to main file (text1) the **3rd** line from reference file (text2).
+- change lines **2 and 4** of main file (text1) to match **2 and 4** of reference file (text2).
 
-> in case of need for additon or deletion, instead of **c** an **a** or **d** is shown.
+---
 
-### which
+**`which `**`[option] [command+++]`\
+--> locate the executable file associated with a given command.
 
     $ which diff
-        /usr/bin/diff
+    /usr/bin/diff
 
-> `$PATH` en. var. is used by many linux tools such as `which`.
+`$PATH` environment variable is used by `which` to look for executable locations.
 
-    $ echo $PATH
-        /usr/local/bin:/usr/local/sbin:.....
-        /home/rod/.local/bin/:.....
+|Option     |Description|
+|-          |-|
+|-a         |view all matches, not just the first|
 
-which command is also usefull to determine if the tool is using an alias.
+**which** command is also usefull to determine if the tool is using an alias.
 
     $ which ls
-        alias ls='ls --color-auto'
-        usr/bin/ls
+    alias ls='ls --color-auto'
+    usr/bin/ls
 
-### whereis
+---
+
+**`whereis `**`[option] [command+++]`\
+--> locate the binary, source and manual page files for a given command.
 
     $ whereis diff
-        diff : /usr/bin/diff /usr/share/man/man1/diff.1.gz
+    diff : /usr/bin/diff /usr/share/man/man1/diff.1.gz
 
-### locate
+---
 
-> unlike in `whereis` the `locate` tool cal employ a pattern.
+**`locate `**`[option] [pattern+++]`\
+--> quickly find files and directories by name, much faster than find.
 
-    -A --all            display files that match all the patterns only.
-    -b --basename       search only files  not directories.
-    -c --count          display the number of iles matching the pattern instead of list of names.
-    -q --quiet          suppress error messages.
-    -i --ignore-case    ignore case.
-    -r --regexp R       use regex 'R' instead of a pattern.
-    -w --wholename      search files and directories.(default).
-.
+|Option     |                   |Description|
+|-          |-                  |-|
+|-A         |--all              |only display files that match all the patterns (default)|
+|-b         |--basename         |exclude directories|
+|-c         |--count            |display only matched count|
+|-q         |--quiet            |suppress error messages|
+|-i         |--ignore-case      |ignore case|
+|-r         |--regexp           |use regex instead of a pattern.|
+|-w         |--wholename        |search files and directories (default)|
 
-    $ locate text2
-        /home/rod/Downloads/text2
-        /home/rod/text22
-        /home/rod/mytext23
+> **!** **locate** automatically add wild cards to the start and end of the \***pattern**\*.\
+> **!** to avoid **file globbing**, use (double|single) quotation marks + escape char ( **\\** ) or REGEX ( **-r** ).\
+> **!** `$ locate '\text2'`
 
-> `locate` automatically add wild cards to the start and end of the \***pattern**\*.
+> **locate** uses the **mlocate** database which is updated once a day with a **cronjob** , hence newly created files wont be listed.\
+> **!** `$ updatedb` to update the file list immediately.
 
-to avoid **globbing**, use quotation marks and escape char.
+---
 
-`$ locate '\text2'`
+**`find `**`[option] [base] [argument] [pattern+++]`\
+--> search the live filesystem for files and directories based on name, type, size, time, ownership, etc...
 
-using multiple patterns
+> **!** using **find** without any arguments may result in unexpected behavior.\
+> **!** `$ find file1` --> does not match any file or folder called **file1** + outputs every file and folder in search scope.\
+> **!** `$ find /home/file1` --> matches **/home/file1** + outputs every file and folder in search scope.
 
-`$ locate '\passwd' group newtext3 hello`
-
-> `locate` uses the ***mlocate** database which is updated once a day with a **cronjob** , hence newly created files wont be listed.\
-> run `updatedb` to update the file list. (may take a long time).
-
-### find
-
-    -cmin x         files status changed x mins ago.
-    -mmin x         files data changed x min ago.
-    -empty          display empty files and folders.
-    -gid x          group id.
-    -group "x"      group name.
-    -inum x         inode number.
-    -maxdepth x     recurse depth.
-    -name ""        regex or pattern.
-    -iname ""       regex or pattern ignore case.
-    -nogroup        has no group.
-    -nouser         has no user.
-    -perm 666       matching perms octal or symbolic.
-    -size x         matching size add suffix as required (G).
-    -user "max"     of user "max".
-
-`find . -maxdepth 2 -name "*.txt" -perm /4000`
-
-> older systems use '+' instead of '/'.
+|Argument   |           |Description|
+|-          |-          |-|
+|-size x    |           |file size (b/c/k/M/G)|
+|-amin x    |-atime     |file access|
+|-mmin x    |-mtime     |file content change (modification)|
+|-cmin x    |-ctime x   |file **status** change <br> min --> minuites / time --> days <br> x --> exactly / -x --> less than / +x --> more than <br> file status --> Permissions / Ownership / Number of hard links / Inode Number|
+|-name ""   |           |regex or pattern|
+|-iname ""  |           |regex or pattern ignore case|
+|-gid x     |           |group id|
+|-group ""  |           |group name|
+|-inum x    |           |inode number|
+|-perm xxx  |           |matching perms octal or symbolic <br><br> **-u=x** -->  user has execution <br> **-ug=rw** --> user & group can read and write <br><br> **764** --> exact match <br> **-764** --> at least 764 (764 / 765 / 766 / 767 / 774 / 775 / 776 / 777) <br> **/764** --> match any combination of the set bits **rwxrw-r--** <br> r-------- / -w------- / --x------ / rw------- / rwx------ / r-x------ / -wx------ / (etc...)|
+|-maxdepth x|           |recurse max depth|
+|-mindepth x|           |recurse min depth|
+|-user "x"  |           |user "x"|
+|-nogroup   |           |has no group|
+|-nouser    |           |has no user|
+|-empty     |           |empty files and folders|

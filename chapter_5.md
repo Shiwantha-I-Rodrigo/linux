@@ -1,159 +1,186 @@
 # BOOT PROCESS
 
-1. firmware start > POST (Power On Self Test) > search for bootable devices and a bootloader.
-2. bootloader starts and determines which kernal to load.
-3. kernal loads into memory and start daemons.
+1. Electrical power flows to the components of the computer\
+↓
+2. The firmware ( BIOS / UEFI ) runs a POST ( Power On Self Test) & checks for essential hardware : CPU, RAM, keyboard, etc.\
+↓
+3. The firmware detect connected devices, test and configures (memory timings, voltage, drive controllers, etc.) hardware components.\
+↓
+4. The firmware looks for a boot loader (bootable device)\
+↓
+5. The firmware loads the bootloader from the disk to the RAM\
+↓
+6. The bootloader looks for a kernal\
+↓
+7. The bootloader loads the kernel into RAM and pass control to the kernel (kernel handoff)\
+↓
+8. The kernal starts the init process
 
-## dmesg
+---
 
-view boot messages.
+**`dmesg `**`[option]`\
+--> display kernel-related messages and diagnostics.
 
-> **only if available** since, the *kernal ring buffer* is circular and new kernal messges may overwrite boot messages.
+> **!** since, the *kernal ring buffer* is circular, new kernal messges may overwrite boot messages.
 
-## FIRMWARE START
+---
 
-1. BIOS (Basic Input / Output System)
+## FIRMWARE
 
-original BIOS firmware could only read one sector of data from the hard disk, since this is not enought to load a full kernal, a *bootloader* program is loaded to initialize the nessasery hardware to find and run the kernal. bootloader has a config file with information to find the operating system.
+**BIOS (Basic Input / Output System)**
+
+original BIOS firmware could only read one sector of data from the hard disk.\
+since this is not enought to load a full kernal, a **bootloader** program is loaded.\
+the **bootloader** locate the kernal and load it to the ram.
+
 bootloader can be stored in,
-+ internal HD
-+ external HD
++ internal / external HD
 + CD/DVD
 + USB
 + ISO file
 + network server (NFS / HTTP / FTP)
 
-**MBR** is the first sector of the first partition of a HD.
+> **!** **MBR** is the first sector of the first partition of a HD.
 
-> bootloader is not required to point to a Kernal file, it could point to another program of any type, including another bootloader program.
+bootloader is not required to point to a Kernal file.\
+it could point to another program of any type, including another bootloader program.
 
+---
 
-2. UEFI (Unified Extensible Firmware Interface)
+**UEFI (Unified Extensible Firmware Interface)**
 
-insted of the first sector , a full partiiton (EFI system partition) is allocated to store bootloaders. ESP uses microsofts FAT (file allocation table). UEFI firmware sometimes uses a built in program (boot manager) to control which bootloader to run.
+Instead of the first sector , a full partiiton (EFI system partition) (FAT) is allocated to store bootloaders.\
+UEFI firmware has a built in boot-manager to control which bootloader to run.\
+each bootloader file must be registered in the boot-manager for it to appear in the boot menu.\
+efi files stored in **/boot/efi/** doesn't have a fixed extention for efi files, but **.efi** is preffered.
 
-> secure boot is only loading bootloders digitally signed by a known certificate, many systems recognize only microsoft certificates, hence many linux distros use **chainloading**, using a **shim bootloader** signed by microsoft to point to the real bootloader.
+> **!** secure boot is only loading digitally signed bootloders.\
+> **!** many systems recognize only microsoft certificates.\
+> **!** linux distros use **chainloading** ( using a **shim bootloader** signed by microsoft to point to the real bootloader ).
 
-each bootloader file must be registered in the bootmanager for it to appear in the boot menu.
+---
 
-> doesn't have a fixed extention for efi files, but **.efi** is preffered.\
-> stored in **/boot/efi/**.
+## BOOTLOADERS
 
-## BOOTLOADER START
+**LILO (Linux Loader)**
 
-### LILO (Linux Loader)
+- the first linux bootloader.
+- doesn't support UEFI.
+- config fie located at **/etc/lilo.conf**.
 
-The first linux bootloader.\
-doesn't support UEFI\
-config fie located at /etc/lilo.conf
+---
 
-### GRUB (GRUB Legacy)
+**GRUB (GRUB Legacy)**
 
-GRUB *menu commands* are stored in a config file (/boot/grub/) called **menu.lst** or **grub.conf**.\
-GRUB config file consist of 2 sections
+- GRUB menu-commands are stored in --> ***/boot/grub/menu.lst***
+- GRUB config file consist of 2 sections
+    + global definitions
+    + os boot definitions
+```
+    -------------- global definitions --------------
 
-#### Global definitions
+    # Set GRUB menu text and highlight colors
+    color light-gray/blue
 
-    color       foregraound and background colors of the boot menu.
-    default     default selected menu option.
-    fallback    a secondary selection incase default fails.
-    hiddenmenu  hides menu.
-    splashimage menu background image.
-    timeout     wait for deafult selection.
+    # Set the default boot entry
+    default 0
 
-.
+    # Fallback options if default fails
+    fallback 1 2
 
-    default 0                     < default selected entry\
-    timeout 10                    < select timeout\
-    color white/blue yellow/blue  < foreground/background for normal and selected entries.
+    # Hide the boot menu unless a key is pressed
+    hiddenmenu
 
+    # Wait 5 seconds before auto-booting the default entry
+    timeout 5
 
-#### OS boot definitions
+    # Set splash image background (must be 640x480 .xpm.gz)
+    splashimage=(hd0,0)/boot/grub/splash.xpm.gz
 
-> after global definitions each OS must have its own definitions.
+    -------------- os boot definitions --------------
 
-    title           boot menu entry.
-    root            disk and partition of /boot folder.
-    kernal          kernal image in the defined /boot folder
-    initrd          define initial RAM disk file, drivers for kernal to interact with system hardware.
-    rootnoverify    non linux boot partitions.
+    # Entry 0: Ubuntu Linux
+    title Ubuntu Linux 10.04
+        # Specify boot partition
+        root (hd0,0)
+        kernel /boot/vmlinuz-2.6.32-21-generic root=/dev/sda1 ro quiet splash
+        initrd /boot/initrd.img-2.6.32-21-generic
 
-.
+    # Entry 1: Windows XP
+    title Windows XP
+        # Use rootnoverify to avoid mounting or probing the partition
+        rootnoverify (hd0,1)
+        chainloader +1
+```
 
-    title Arch Linux
-    root (hd0,0)
-    kernal (hd0,0)/boot/vmlinuz
-    initrd /boot/initrd
+> **!** **(hd0,0)** means first partition of first hard disk **( ie, sda1 )**.\
+> **!** in **vmlinuz** the *z* means that the kernal is compressed with *bz*. uncompressed kernal is **vmlinux**. 
 
-    title Windows 7
-    rootnoverify (hd0,4)
-
-> GRUB uses a rather inconvinient number system for hard drives and partitions. **(hd0,0)** means first partition of first hard disk.\
-> generally **sda3** in primary HD can be writen as **(hd0,2)**.\
-> in **vmlinuz** the *z* means that the kernal is compressed with *bz*. uncompressed kernal is **vmlinux**. 
-
-install grub after creating the config file.
-
+manually create grub config file then install it using.\
 `grub-install /dev/sda` or `grub-install '(hd0)'`
 
-to install a copy of GRUB in the **bootsector of a partition** instead of the **mbr of a hard disk** for *chain loading*,
-
+to install a copy of GRUB in the **bootsector of a partition**\
+instead of the **mbr of a hard disk** for *chain loading*.\
 `grub-install /dev/sda2` or `grub-install '(hd0,1)'`
 
-> no need to reinstall GRUB after config changes.
+> no need to reinstall GRUB after config changes, since GRUB Legacy always reads *' /boot/grub/menu.lst '* at boot time.
 
-### GRUB2
+---
 
-mostly similar to GRUB, with a few changes.
+**GRUB2**
 
-config file > /boot/grub/***grub.cfg***
+GRUB 2 : configuration system has 3 files.
 
-    menuentry "Arch Linux"{
+|Location                               |Details|
+|-                                      |-|
+|***/boot/grub/grub.cfg*** : (Debian) <br> ***/boot/grub2/grub.cfg*** : (RedHat)|main configuration file <br> do not edit manually <br> generated by `update-grub` or `grub-mkconfig` + `grub-install` <br> `grub-mkconfig -o /boot/grub/grub.cfg` <br> `grub-install /dev/sda3` <br> `update-grub` ( debian only ) <br> for RedHat / Fedora / etc.. use **grub2** instead of **grub** in commands <br> `grub2-mkconfig -o /boot/grub2/grub.cfg` <br> `grub2-install /dev/sda3`|
+|***/etc/grub.d/***                     |contain script files that define boot menu entries <br> 10_linux --> detects installed Linux <br> 40_custom --> user-defined entries <br> etc...|
+|***/etc/default/grub***                |global settings file ( default / timeout / etc... )|
+
+*/boot/ { grub | grub2 } /grub.cfg file* :
+
+    # Set default boot entry
+    set default=0
+
+    # Set timeout (seconds to wait before auto-booting)
+    set timeout=5
+
+    # Set menu colors
+    set menu_color_normal=white/black
+    set menu_color_highlight=black/light-gray
+
+    # Entry 0: Linux
+    menuentry "My Linux" {
         set root=(hd0,1)
-        linux /boot/vmlinuz
-        initrd /initrd
-    }
-    menuentry "Windows 7"{
-        set root=(hd1,3)
+        linux /boot/vmlinuz-linux root=/dev/sda2 ro quiet
+        initrd /boot/initrd.img-linux
     }
 
-> GRUB2 numbering starts at **1 instead of 0 only for partitions**.\
->
-> do not modify grub config file manually.\
-> use ***/etc/grub.d/*** for individual boot options (seperate files).\
-> use ***/etc/default/grub*** for global commands.
+    # Entry 1: Windows
+    menuentry "Windows 10" {
+        set root=(hd0,2)
+        chainloader +1
+    }
 
-linux create new grub config files after certain events.\
-use `grub2-mkconfig -o /boot/grub2/grub.cfg` to create the grub configuration.( **-o** redirect output to file instead of STDOUT).
+> **!** GRUB2 numbering starts at *1 instead of 0 for partitions*. first partition of first drive --> **(hd0,1)**
 
-> reinstall GRUB2 after config changes > `grub2-install /dev/sda3`\
-> or instead of running two commands just run `update-grub2`
+---
 
-### ALTERNATIVE BOOTLOADERS
+**ALTERNATIVE BOOTLOADERS**
 
-+ SYSLINUX *for FAT file systems (USB)*
-+ EXTLINUX *for EXT / btrfs file systems*
-+ ISOLINUX *for ISO file systems (LiveCD)*
-    - isolinux.bin < bootloader >
-    - isolinux.cfg < config file >
-+ PXELINUX *for network file systems*
-    - PXE uses DHCP to assign an address to workstation.
-    - BOOTP loads the bootloader to the workstation using TFTP protocol (can be modified to use NFS / HTTP / FTP).
-    - PXELINUX is stored in `/tftpboot/pxelinux.0` in TFTP server.
-    - each workstation has own configuration files (name based on MAC) in `/tftpboot/pxelinux.cfg` **directory**.
+| Bootloader    | Supported File System     | Notes / Details|
+|-              |-                          |-|
+| **SYSLINUX**  | FAT file systems          ||
+| **EXTLINUX**  | EXT, Btrfs file systems   ||
+| **ISOLINUX**  | ISO file systems (LiveCD) |`isolinux.bin` = bootloader <br> `isolinux.cfg` = configuration file|
+| **PXELINUX**  | Network file systems      |• BOOTP (Bootstrap Protocol) is a network protocol used to automatically obtain : <br> An IP address <br> The location of a boot file <br> The IP address of the server hosting that boot file <br><br> • Boot process : <br> Getting an IP address via DHCP <br> Downloading a bootloader **/tftpboot/pxelinux.0** via **TFTP** <br> Loading a configuration file from **/tftpboot/pxelinux.cfg** <br> Booting the specified kernel or OS installer|
+| **MEMDISK**   | Older DOS systems         ||
 
-+ MEMDISK *for older DOS systems*
+---
 
-# SYSTEM RECOVERY
+## SYSTEM RECOVERY
 
-+ KERNAL FAILURES (kernal panics)
-    - select previous kernal
-    - single user mode
-        * add 'single' to linux line in grub config (press **E** at grub menu)
-    - passing any other Kernal parameter.
-
-+ DRIVE FAILURES
-    1. load a rescue os to run from RAM
-    2. inspect / fix root drive `fsck /dev/sda3`.\
-    (run as many times needed to get a *''clean''* run. add `-y` option to auto answer repair prompts.)
-    3. try mounting and reading the content after repair `mount /dev/sda3 /media`
+| **Failure**                           | **Troubleshooting Steps**|
+|-                                      |-|
+|Kernel Failures<br>**Kernel Panics**   |1. Select a previous kernel from GRUB <br> 2. Boot into **single user mode** <br> • Press **E** at GRUB menu and add `single` to the Linux line <br>3. Try passing other kernel parameters|
+|Drive Failures                         | 1. Load a rescue OS (runs from RAM) <br> 2. Run `fsck /dev/sda3` to inspect/fix the drive <br> • Repeat until you get a *"clean"* result <br> • Use `-y` to auto-confirm repairs <br> 3. Mount and check contents: `mount /dev/sda3 /media`|

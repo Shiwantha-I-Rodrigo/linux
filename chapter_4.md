@@ -1,154 +1,140 @@
 # SEARCHING AND ANALYSING TEXT
 
-## cut
+**`cut `**`[option] [file+++]`\
+--> extract sections from each line of an input.
 
-> a record is a line of text ending in a newline character.\
-> a delimeter is used to identify "fields" within a record.
+|Option     |                       |Description|
+|-          |-                      |-|
+|-b 1-5,7   |--bytes 1-5,7          |show bytes 1-5 and 7|
+|-c 1-5,7   |--characters 1-5,7     |show characters 1-5 and 7|
+|-d ","     |--delimeter ","        |designate the delimeter <br> delimeter is used to seperate "fields" within a record|
+|-f 1-5,7   |--fields 1-5,7         |show fields 1-5,7|
+|-s         |--only-delimeted       |only display records that contain the delimeter|
+|-z         |--zero-terminated      |designate end-line character as ASCII NUL|
 
-    -c 1-5,7    --characters 1-5,7      show only characters 1-5 and 7.
-    -b 1-5,7    --bytes 1-5,7           show only bytes 1-5 and 7.
-    -d ","      --delimeter ","         designate the delimeter.
-    -f 1-5,7    --fields 1-5,7          show only fields 1-5,7.
-    -s          --only-delimeted        only display records that contain the delimeter.
-    -z          --zero-terminated       designate end-line character as ASCII NUL.
+---
 
-`$ cut -d ":" -f 1 /etc/passwd`
+**`grep `**`[option] [pattern] [file+++]`\
+--> searches lines of text for patterns using regular expressions.
 
-## grep
+|Option     |                       |Description|
+|-          |-                      |-|
+|-c         | --count               |print only count of matching lines|
+|-v         | --invert-match        |invert match|
+|-i         | --ignore-case         |case-insensitive match|
+|-d act     | --directories=act     |set an action for directories (read/skip/recurse)|
+|-R / -r    | --recursive           |recursive search|
+|-E         | --extended-regexp     |search pattern is EXTENDED regex|
+|-e         | --regexp=             |use multiple patterns <br> `$ grep -e 'one' -e 'two' file1`|
+|-f         | --file=               |read patterns from a file, one pattern per line|
 
-    -c      --count             display the pattern match count.
-    -d act  --directories=act   when the file is a dir, set an action (read/skip/recurse).
-    -E      --extended-regexp   search pattern as an EXTENDED regex expression.
-    -i      --ignore-case       ignore case pattern and text.
-    -R -r   --recursive         recursive search.
-    -v      --invert-match      display only non matching records.
+> **!** `egrep` (depricated) = `grep -E`
 
-`$ grep root.*bash /etc/passwd` \
-*search for records with word "root" followed by "bash", ".\*" denotes any number of other characters in between.*
+---
 
-ie. **-v** can be used to audit whether there are records that does not match the correct format of a .conf file.
+**`sort `**`[option] [file+++]`\
+--> sort lines of text.
 
-`$ grep -E "^root|^dbus" /etc/passwd`\
-`$ egrep "^root|^dbus" /etc/passwd`\
-*search for records with "root" or "dbus" using extended regular expression pattern*\
-the `egrep` tool can also be used when using extended regular expressions.
+|Option         |                       |Description|
+|-              |-                      |-|
+| -n            | --numeric-sort        |sort numerically|
+| -r            | --reverse             |reverse order|
+| -c            | --check               |check if the file is sorted, print only if unsorted|
+| -f            | --ignore-case         |consider lowercase letters as uppercase|
+| -k n1 [,n2]   | --key n1 [,n2]        |sort using the field n1 and optionally n2|
+| -M            | --month-sort          |sort by month, must be three letter abbrviations (APR,MAY.JUN,JUL)|
+| -t            | --field-separator=    |designate the delimeter|
+| -o sorted     | --output=             |create a new file with sorted data|
+| -u            | --unique              |remove duplicate lines|
 
-## sort
+---
 
-    -c          --check         check if the file is in order, produce no output if file is in order.
-    -f          --ignore-case   consider lowercase letters as uppercase.
-    -k n1 [,n2] --key n1 [,n2]  sort using the field n1 and optionally n2.
-    -M          --month-sort    sort by month, must be three letter abbrviations (APR,MAY.JUN,JUL).
-    -n          --numeric-sort  must be used if the sort field are numbers.
-    -o sorted   --output=sorted create a new file with sorted data.
-    -r          --reverse       reverse order.
+**`printf `**`[format] [argument+++]`\
+--> format and print text.
 
-`$ sort -n numbers.txt`
+> **!** **printf** is generally more consistent with escape chars and has better formatting options than **echo**.\
+> **!** Unlike **echo**, **printf** does not add a newline at the end.
 
-## printf
+|Specifier  |Description                    |Output|
+|-          |-                              |-|
+| %s        | String                        |"%s" "hello" --> `$ hello $`|
+| %d        | Integer (decimal)             |"%d" 0xff --> `$ 255 $`|
+| %f        | Floating-point number         |"%f" 42.5 --> `$ 42.500000 $`|
+| %x        | Hexadecimal (lowercase)       |"%x" 255 --> `$ ff $`|
+| %X        | Hexadecimal (uppercase)       |"%X" 255 --> `$ FF $`|
+| %o        | Octal                         |"%o" 8 --> `$ 10 $`|
+| %c        | ASCII character               |"%c" 65 --> `$ A $`|
+| %%        | Literal percent sign          |"%%" --> `$ % $`|
 
-    $ printf "hello world"
-    hello world $
+|Format         |Description                    |Example|
+|-              |-                              |-|
+|% {x} [d/f]    |x digits + right aligned       | `.........1` |
+|% 0{x}[d/f]    |x digits + pre zero padding    | `0000000001` / `001.000000` |
+|% .{x}[d]      |x digits + pre zero padding    | `0000000001` |
+|% .{x}[f]      |exact number of decimals       | `1.00000000` |
 
-    $ printf "%s\n" "hello world"
-    hello world
+> **!** formats can be combined  `printf "%8.4d" 2` --> `....0002`\
+> **!** the default is 6 decimal points.\
+> **!** in case of conflict the higher number is prioratized `printf "%4.8d" 2` --> `00000002`
+
+    $ for i in $( seq 1 10 ); do printf "%03d - %o \n" $i $i ; done
+    001 - 1 
+    002 - 2 
+    ...
+    007 - 7 
+    008 - 10 
+    009 - 11 
+    010 - 12
     $
 
-    $ printf "%s\n" "hello world" "welcome"
-    hello world
-    welcome
-    $
+---
 
-    $ printf "%.1f\n" 255 0xff
-    255.0
-    255.0
-    $
+**`wc `**`[option] [file+++]`\
+--> count lines, words, characters, bytes, etc in a file or input.
 
-    $ printf "%03d\t" 25 0xff
-    025    255 $
+|Option         |                       |Description|
+|-              |-                      |-|
+|-l             |--lines                |line count|
+|-w             |--words                |word count|
+|-c             |--bytes                |bytes count|
+|-m             |--chars                |char count|
+|-L             |--max-line-length      |byte count of the longest line|
 
+> **!** `$ wc log.txt` --> `5   9   45  log.txt` --> **[ lines ] [ words ] [ bytes ] [ file name ]**
 
-    %c  character
-    %d  decimal integer
-    %f  float
-    %s  string
+---
 
-    \f  form feed
-    \n  new line
-    \r  carriage return
-    \t  horizontal tab
+**`tee `**`[option] [file+++]`\
+--> write to both standard output and one or more files simultaneously.
 
-> **echo** Vs **printf**\
-> echo can be problematic when it comes to escape characters and how it displays data.\
-> printf is generally more consistent and has better formatting options.
+    ls -l | tee file1 file2
 
-    $ for i in $( seq 1 4 ); do printf "%03d\t" "$i"; done
-    001    002    003    004 $
+>**!** it is usefull when installing software while saving a log and viewing what is happening in real time.
 
-## wc
+---
 
-word count
+## REDIRECTING INPUT / OUTPUT
 
-    -l  --lines             line count.
-    -w  --words             word count.
-    -c  --bytes             bytes count.
-    -m  --chars             char count.
-    -L  --max-line-length   byte count of the longest line.
-
-.
-
-    $ wc log.txt
-        5   9   45  log.txt
-
-without any options the default result is **[lines] [words] [bytes] [file name]**.
-
-# REDIRECTING INPUT / OUTPUT
-
-Linux treats every object as a file. including the output process displaying text on screen.
-
-when a file is opened a file descriptor is assigned to the opened file. it's a non negative integer.
+Linux treats every object as a file. including the output process displaying text on screen.\
+File descriptor is a non-negative integer that the OS uses to keep track of open files or I/O streams.
 
 file descriptors
 + STDIN = 0
 + STDOUT = 1
 + STDERR = 2
 
-## STDOUT
+by default output is directed to the current terminal ( **/dev/tty** file ).\
+but it can be redirected with a re-direction operator.
 
-by default STDOUT directs output to the current terminal ( **/dev/tty** file ).\
-but it can be redirected with redirection operator ( > )
+|Descriptor     |Description|
+|-              |-|
+|STDOUT         |`$ echo "hello world" > file1` ( redirect output ) <br> **>** --> Overwrite <br> **>>** --> Append|
+|STDERR         |`$ grep -d skip hosts: /etc/* 2> err.txt` ( redirect error messages ) <br> **2>** --> Overwrite <br> **&>** --> redirect both output and errors <br> **>&**  --> redirect both output and errors <br> **> file 2>&1**  --> redirect both output and errors <br> **2> /dev/null** --> throw away error messages|
+|STDIN          |`$ tr " " "," < file` ( redirect as input ) <br> **<** --> Input|
+|HEREDOC        |**<<** --> HereDOC <br> `$ sort << EOF` (redirecting multiple input items in to a command)|
 
-`$ echo "hello world" > file1`
-
-> the ( > ) operator will overwrite the existing data !\
-> use ( >> ) to append data.
-
-## STDERR
-
-**2>** is used to redierect error outputs.
-
-`$ grep -d skip hosts: /etc/* 2> err.txt`
-
-> to redirect both STDOUT and STDERR use any of the following formats.\
-> **&>**\
-> **>&**\
-> **> outputfile 2>&1**
-
-to throw away error messages redirect to /dev/null\
-`$ grep -d skip hosts: /etc/* 2> /dev/null`
-
-## STDIN
-
-using a file (automatic) instead of the keyboard (manual) to direct input to a process.
-
-    $ tr " " "," < numbers.txt
-        2,4,6,7,8,9
-
-replace empty spaces in numbers input with ",". ! the actual file is not altered. only the output.
-
-## HEREDOCS
-
-redirecting multiple items in to a command.
+when the enter key is pressed after entering the command, a prompt will apear asking for data\
+and will continue to ask for new data, untill the "ending keyword specified" is eneterd.
 
     $ sort << EOF
     > saman
@@ -160,25 +146,11 @@ redirecting multiple items in to a command.
     saman
     $
 
-when the enter key is pressed after entering the command, a prompt will apear asking for data,\
-and will continue to ask for new data, untill the "ending keyword" is eneterd.\
-**EOF** can be replaced with any multichar text that does not appear in the data.
-
-Heredocs accepts **command expansion**.
-
-    cat << EOF
-    > $(echo Hello)
-    > $(whoami)
-    > EOF
-    Hello
-    saman
-    $
-
-use "" to ignore command expansion.
-
-    cat << "EOF"
-
-this will consider the data entered following the command as string.
+>**!** **EOF** can be replaced with any multichar text that does not appear in the data.\
+>**!** **> $(whoami)** : Heredocs accepts **command expansion**.\
+>**!** **cat << "EOF"** : use "" to ignore command expansion.
+ 
+ ---
 
 ## PIPING
 
@@ -189,17 +161,12 @@ this will consider the data entered following the command as string.
 3. the `sort` command sorts the list alphabetically.
 4. the `less` command display the results.
 
-> the "|" operator directs the previous commands output to the proceding command as input.
+> **!** the " | " operator directs the previous commands output to the proceding command as input.
 
-instead of `less` the `tee` command can be used to view the results while saving them as well.\
-it is usefull when installing software while saving a log and viewing what is happening in real time.
+## COMMAND LINE CREATION
 
-# COMMAND LINE CREATION
-
-## xargs
-
-When piping without **xargs**, the actual data is fed into the next command.\
-when piping with **xargs**, the actual data is viewed as a parameter to the next command.
+### xargs
+--> pipe results from previous command as **arguments** to the next command.
 
     $ cat file
     hello world
@@ -211,143 +178,114 @@ when piping with **xargs**, the actual data is viewed as a parameter to the next
     hello world
     $
 
-> the first example is equalent to **grep "hello" <<< "file"** where file is data.\
-> the second is **grep "hello" file** where file is an argument.
+> the first example is equalent to **grep "hello" <<< "file"** where the name 'file' is the data.\
+> the second is **grep "hello" file** where file is an argument and the content of the file is the data.
 
-## shell expansion
+---
+
+### shell expansion
 
 `$ rm $(find tmp -size 0)`
 
-## backticks
+---
+
+### backticks
 
 ``$ rm `find tmp -size 0` ``
 
-## brace expansion
+---
+
+### brace expansion
 
 `$ rm /tmp/emptyfile{1,2,3}.txt`\
 use one line instead of 3 lines.
 
-# EDITING TEXT FILES
+## EDITING TEXT FILES
 
-## nano
+**`nano `**`[option] [file+++]`\
 
-    Ctrl + O        Save A File
-    Ctrl + X        Exit file, with prompt
-    Alt + U         Undo an action
-    Ctrl + Space    Move one word forward
-    Alt + Space     Move one word backward
-    Ctrl + V        Move to next page
-    Ctrl + Y        Return to the preceding page
+| Shortcut          | Action|
+|-                  |-|
+| Ctrl + O          | Save a File|
+| Ctrl + X          | Exit file, with prompt|
+| Alt + U           | Undo an action|
+| Ctrl + Space      | Move one word forward|
+| Alt + Space       | Move one word backward|
+| Ctrl + V          | Move to next page|
+| Ctrl + Y          | Return to the preceding page|
 
-## vim
+---
+
+**`vim `**`[option] [file+++]`\
 
 vim has 3 modes,
-1. command mode\
-    normal mode where shortcut keys are enabled.
-2. insert mode\
-    edit mode where very few shortcuts are enabled, used for inserting text.
-3. ex mode\
-    colon command mode where command expressions are given. ( ie **:wq** ). 
+1. command mode : normal mode where shortcut keys are enabled.
+2. insert mode : edit mode where very few shortcuts are enabled, used for inserting text.
+3. ex mode : colon command mode where command expressions are given. ( ie **:wq** ). 
 
 **Command mode**
 
-    h       move left
-    l       move right
-    j       move down
-    k       move up
-    w       move one word forward
-    e       move to end of current word
-    b       move back one word
-    ^       move to begining of line
-    $       move to end of line
-    gg      move to first line
-    G       move to last line
-    nG      move to n line
-    Ctrl+B  scroll up one screen
-    Ctrl+F  scroll down one screen
-    Ctrl+U  scroll up half screen
-    Ctrl+D  scroll down half screen
-    Ctrl+Y  scroll up one line
-    Ctrl+E  scroll down one line
+| Shortcut  | Action  |
+|-          |-|
+| h         | Move left|
+| l         | Move right|
+| j         | Move down|
+| k         | Move up |
+| w         | Move one word forward|
+| e         | Move to end of current word|
+| b         | Move back one word|
+| ^         | Move to beginning of line|
+| $         | Move to end of line|
+| gg        | Move to first line|
+| G         | Move to last line|
+| nG        | Move to n-th line|
+| Ctrl + B  | Scroll up one screen|
+| Ctrl + F  | Scroll down one screen|
+| Ctrl + U  | Scroll up half screen|
+| Ctrl + D  | Scroll down half screen|
+| Ctrl + Y  | Scroll up one line|
+| Ctrl + E  | Scroll down one line|
 
 **Ex mode**
 
-    :x              write buffer to file, quit
-    :wq             write buffer to file, quit
-    :wq!            write buffer to file, quit (override protection)
-    :w              write buffer to file
-    :w!             write buffer to file (override protection)
-    :q              quit
-    :q!             quit (override protection)
-    :!*command*     execute shell command
-    :r!*command*    execute shell command include results in buffer area.
-    :*file*         include file content in buffer area.
+| Command           | Action|
+|-                  |-|
+| `:x`              | Write buffer to file, quit|
+| `:wq`             | Write buffer to file, quit|
+| `:wq!`            | Write buffer to file, quit (override protection)|
+| `:w`              | Write buffer to file|
+| `:w!`             | Write buffer to file (override protection)|
+| `:q`              | Quit|
+| `:q!`             | Quit (override protection)|
+| `:!*command*`     | Execute shell command|
+| `:r!*command*`    | Execute shell command, include results in buffer|
+| `:*file*`         | Include file content in buffer area|
 
-## Stream Editors
+---
 
-### sed
+### Stream Editors
+--> parsing and transforming text in a streaming fashion (without loading the entire file into memory).
+
+**`sed `**`[option] ['pattern'] [file+++]`
 
     $ cat file
-        tik tok tik tok
-        tik tok
-        tik
+    tik tok tik
+    tik tok
+    tik
 
-    # (p) print lines in addition to default print behavior.
-    $ sed 'p' file
-        tik tok tik tok
-        tik tok tik tok
-        tik tok
-        tik tok
-        tik
-        tik
+|**Syntax**                             |**Function**                                           |**Output**|
+|-                                      |-                                                      |-|
+|`sed 'p' file`                         |Print matched lines **in addition to** default output  |tik tok tik <br> tik tok tik <br> tik tok <br> tik tok <br> tik <br> tik|
+|`sed -n 'p' file`                      |Suppress default output                                |tik tok tik <br> tik tok <br> tik|
+|`sed -n '1,2p' file`                   |Print lines 1 to 2                                     |tik tok tik <br> tik tok|
+|`sed -n '1~2p' file`                   |Print every other line starting from line 1            |tik tok tik <br> tik|
+|`sed '1~2d' file`                      |Delete every other line starting from line 1           |tik tok|
+|`sed 's/tik/tuk/' file`                |Substitute first match on each line                    |tuk tok tik <br> tuk tok <br> tuk|
+|`sed 's/tik/tuk/g' file`               |Substitute **all** occurrences of pattern on each line |tuk tok tuk <br> tuk tok <br> tuk|
+|`sed -e 's/tik/tuk/g' -e 's/tuk/tek/'` <br> `sed 's/tik/tuk/g ; s/tuk/tek/' file`|Specify multiple `sed` expressions|tek tok tuk <br> tek tok <br> tek|
+|`sed -r 's/^ti\w+/tuk/' file`          |Use **extended regex** (ERE)                           |tuk tok tik <br> tuk tok <br> tuk|
 
-    # (-n) to suppress default print behavior.
-    $ sed -n 'p' file
-        tik tok tik tok
-        tik tok
-        tik
-
-    # (1,2p) print lines 1 to 2.
-    $ sed -n '1,2p' file
-        tik tok tik tok
-        tik tok
-
-    # (1~2p) print every other line.
-    $ sed -n '1~2p' file
-        tik tok tik tok
-        tik
-
-    # (1~2d) delete every other line.
-    $ sed '1~2d' file
-        tik tok
-
-    # (s) substitute first occurence.
-    $ sed 's/tok/tik/' file
-        tik tik tik tok
-        tik tik
-        tik
-
-    # (g) sustitute all.
-    $ sed 's/tok/tik/g' file
-        tik tik tik tik
-        tik tik 
-        tik
-
-    # ( -e / ; ) multiple expressions.
-    $ sed -e 's/tok/tik/g' -e 's/tik/tok/g' file
-    $ sed 's/tok/tik/g ; s/tik/tok/g' file
-
-        tok tok tok tok
-        tok tok
-        tok
-
-    # (-r) regex.
-    $ sed -r 's/^ti\w+/Tak/g' file
-        tak tok tik tok
-        tak tok
-        tak
-
-.
+**sed script**
 
     $ cat script.sed
         s/tik/tok
@@ -358,17 +296,25 @@ vim has 3 modes,
         tok tok
         tok
 
-### gawk
+---
+---
+---
 
-gawk is the GNU implementation of the Awk programming language.
+**`gawk `**`[option] ['pattern] [{action}'] [file]`
 
-> **awk** program just softlinks to **gawk**
+> **!** gawk is the GNU implementation of the Awk programming language.\
+> **!** **awk** command just softlinks to **gawk**.
 
-gawk can,
 + define variables and store data.
 + use arithmatic and string operators.
 + use programming structures (ie.loops).
 + create formatted reports from data.
+
+|Option     |                   |Description|
+|-          |-                  |-|
+|-F         |--field-seperator  |`-F:` --> specify field seperator|
+|-f         |--file=            |`-f script.gawk` --> script file|
+|-v         |                   |`-v a="hello"` --> pass variable|
 
 Basic Usage,
 
@@ -376,11 +322,7 @@ Basic Usage,
     file        : $ awk 'pattern { action }' file
     piped input : $ ls | awk 'pattern { action }'
 
-    -F  --field-seperator       specify field seperator     -F: 
-    -f  --file=                 script file                 -f script.gawk file
-    -v                          pass variable               -v a="hello" -v b="$0"
-
-Built-In Variables
+Built-In Variables,
 
     NR  : Keeps a running count of the number of input lines
     NF  : Keeps a count of the number of fields in the current input record
@@ -389,62 +331,42 @@ Built-In Variables
     $1  : 1st field.
     $n  : nth field.
 
-> match **every record** is the default pattern.\
-> **print $0** is the default action.\
-> one block can be ommited but not both.
+> **!** match **every record** is the default pattern.\
+> **!** **print $0** is the default action.
 
-PATTERN BLOCK
+    # From PATTERN and ACTION, one block can be ommited but not both
+    $ awk '/s/ { print $0 }' file
+    $ awk '/s/' file
+    $ awk '{print $0}'
 
-    # print any record with 'tak' in it.
-    $ awk '/tak/ { print $0 }' file
-    tik tok tak
-    tok tak tik
-    ...
+---
 
-    # print any record with 'tak' or 'tuk' in it.
-    $ awk '/tak|tuk/ { print $0 }' file
-    tik tok tuk
-    tok tak tek
-    ...
+**PATTERN BLOCK**
 
-    # print any record with the first field longer than 2 characters.
-    $ awk 'length($1) > 2 { print $0 }' file
-    tik tok tak
-    tok tak tik
-    ...
+|**Pattern**            | **Description**|
+|-                      |-|
+| `/tak/`               | Matches any line containing the string "tak"|
+| `/tak\|tuk/`          | Matches any line containing either "tak" or "tuk" using regex alternation|
+| `length($1) > 2`      | Checks the character length of the first field and prints if greater than 2|
+| `$2 >= 80`            | Numeric comparison of the second field; prints lines where it's ≥ 80|
+| `/a/ && /b/`          | AND|
+| `/a/ \|\| /b/`        | OR|
+| `!/a/`                | NOT|
 
-    # print any record with a value greater than or equal to 80 in 2nd field.
-    $ awk '$2 >= 80 { print $0 }
-    timmy 86 pass
-    cammi 80 pass
-    ken   96 pass
-    ...
+---
 
-OPERATORS
+**ACTION BLOCK**
 
-    &&  : AND   /a/ && /b/
-    ||  : OR    /a/ || /b/
-    !   : NOT   !/a/
+| **Action**                            | **Description**|
+|-                                      |-|
+| `{ print $0 }`                        | Prints the entire line (default action when a line matches the pattern)|
+| `{ print $1, $3 }`                    | Prints the first and third fields, separated by a space|
+| `{ print NR, $0 }`                    | Prints the current record number followed by the entire line|
+| `{ $1 = toupper($1); print }`         | Converts the first field to uppercase and prints the modified line|
+| `{ if ($3 == "fail") { print $1 } }`  | Prints the first field only if the third field equals "fail"|
+| `{ sum += $2 } END { print sum }`     | Adds the values in the second field and prints the total at the end of input <br> # the BEGIN block executes only once and before all other rules <br> # the END block executes only once after program read all the input reccords <br> `$ awk 'BEGIN { print "records with a vowel count" ; } /a\|e\|i\|o\|u/ { counter+=1 ; } END { printf "%s\n", counter ; }' file`|
 
-    x < y : x <= y : x > y : x >= y	: x == y : x != y
-    x ~ y	True if the string x matches the regexp denoted by y 
-    x !~ y	True if the string x does not match the regexp denoted by y
-
-BEGIN and END
-
-    # the BEGIN block executes only once and before all other rules.
-    # the END block executes only once after program read all the input reccords.
-
-    awk 'BEGIN { print "records with a vowel count" ; } /a|e|i|o|u/ { counter+=1 ; } END { printf "%s\n", counter ; }' file
-
-ACTION BLOCK
-
-    # if the 3rd field is 'tak', replace the first field with 'tuk' and print the record.
-    $ awk '{if ($3=="tak") {$1="tuk"; print $0}}' file
-    tuk tok tak
-    ...
-
-> when the program is becomming too complex put it in a file.
+**awk script**
 
     $ cat palindrome.gawk
 
