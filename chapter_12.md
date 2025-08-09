@@ -2,200 +2,170 @@
 
 ## BACKUPS
 
-- System image
-    * copy OS binaries, config files and anything that is required to boot the system.
+| **Backup Type**   | **Description**                                                                                                       | **Performance & Storage**                                                         | **Additional Notes** |
+| -                 | -                                                                                                                     | -                                                                                 | - |
+| **System Image**  | Copies OS binaries, configuration files, and everything required to boot the system.                                  | Useful for system recovery.                                                       | Captures a full bootable state. |
+| **Full**          | Copies all data.                                                                                                      | Takes more time to create, but faster to restore. Ignores file modification dates.| Requires the most storage. |
+| **Incremental**   | Copies only data changed since the last **backup**.                                                                   | Faster to create, slower to restore. Uses less storage.                           | Uses modification timestamps; restore must be incremental. |
+| **Differential**  | Copies data changed since the last **full backup**.                                                                   | Moderate time and storage. Faster to restore than incremental.                    | Also uses modification timestamps. |
+| **Snapshot**      | Captures metadata or pointers representing the data’s state at a specific point in time, rather than copying all data.| Very fast and storage-efficient.                                                  | Often used in virtual environments and storage systems. |
+| **Snapshot Clone**| Creates a backup copy of an existing snapshot.                                                                        | Uses more space than snapshots alone but retains the snapshot's structure.        | Useful for testing and sandbox environments. |
 
-- Full
-    * copy all data.
-    * less time to restore, more time to create.
-    * ignore dates.
-
-- Incremental
-    * copy data that has been modified since last **backup**.
-    * use modified timestamp.
-    * less time to create, more time to restore.
-    * must be restored incrementally as well.
-    * less storage.
-    * periodical full backup is recomended.
-
-- Differential
-    * copy data that has been changed since last **full backup**.
-    * use modified timestamp.
-    * middle ground between full and incremental backups.
-    * periodical full backup is recomended.
-
-- Snapshot
-    * Instead of copying all data, snapshots often store metadata or pointers that indicate where the data was at the time of the snapshot.
-
-- Snapshot Clone
-    * backup a copy of the snapshot.
+---
 
 ## COMPRESSION METHODS
 
-- gzip
-    * gzip / gunzip
-    * replace original file
-- bzip2
-    * bzip2 / bunzip2
-    * higher rates than gzip
-    * longer time
-    * replace original file
-- xz
-    * xz / unxz
-    * higher rates than gzip and bzip2
-    * replace original file
-- zip
-    * compression + archive ( multiple files )
-    * does not replace original file/s
+| **Compression Tool** | **Commands**        | **Compression Characteristics**                | **Effect on Original Files**        |
+| -------------------- | ------------------- | ---------------------------------------------- | ----------------------------------- |
+| **gzip**             | `gzip` / `gunzip`   | Standard compression tool                      | Replaces the original file          |
+| **bzip2**            | `bzip2` / `bunzip2` | Higher compression ratio than gzip, but slower | Replaces the original file          |
+| **xz**               | `xz` / `unxz`       | Better compression ratio than gzip and bzip2   | Replaces the original file          |
+| **zip**              | `zip` / `unzip`     | Compresses and archives multiple files         | Does **not** replace original files |
 
-**all compression methods listed above are lossless**
+> **!** *all compression methods listed above are **lossless***
+
+---
 
 ## ARCHIVE AND RESTORE
 
-! for below archive formats, the extentions are not required but recomended.
+> **!** the **extentions** are **not required** but **recomended**.
 
-**cpio**
+`[filelist] |`**`cpio`**`[option] [>] [file]`\
+**`cpio`**`[option] -O [file] [<] [filelist]`\
+-->  creating & extracting archives.
 
-`$ ls *.txt | cpio -ov > TextArchive.cpio`
+`$ ls *.txt | cpio -o > Archive.cpio` == `$ cpio -o -O Archive.cpio < ls *.txt`
 
-    -I                              designate the archive file to use.
-    -i  --extract                   copy or view files from an archive. (COPY-IN MODE)
-        --no-absolute-filenames     use relative path names.
-    -o  --create                    create archive by copying files into it. ( COPY-OUT MODE)
-    -t  --list                      display the list of files from archive. ( TABLE OF CONTENTS )
-    -v  --verbose                   verbose output.
+| **Option**    |                           | **Description** |
+| -             | -                         | - |
+| **-o**        |**--create**               | Archive files (Copy-out mode) |
+| **-O**        |                           | specify the output file |
+| **-i**        |**--extract**              | Extract files (Copy-in mode) |
+| **-I**        |                           | Specify the Input file |
+|               |**--no-absolute-filenames**| Use relative paths, Required on **extraction**<br>if restoring to a different location than the original |
+| **-t**        |**--list**                 | Display a list of files contained in the archive |
 
-`$ find / -user Adam | cpio -ov > AdamsFiles.cpio` < create an archive of user Adams files >
+---
 
-`$ cpio -iv --no-absolute-filenames -I AdamsFiles.cpio` < restore Adams files to another location >
+**`dd `**`if=[input] of=[output] [option]`\
+--> create low level copies of entire drives or partitions.
 
-> **--no-absolute-filanames** is required if restoring to a different location than the original.
+| **Option**        | **Description** |
+| -                 | - |
+| **bs=BYTES**      | Sets the block size for both input and output Default is 512 bytes |
+| **count=N**       | Specifies the number of input blocks to copy |
+| **status=LEVEL**  | Controls the level of informational output sent to STDERR |
+|                   | **none** – Show only error messages |
+|                   | **noxfer** – Do not show final transfer statistics |
+|                   | **progress** – Show ongoing progress updates during transfer |
 
+> **!** set input to **/dev/zero** to zero an entite drive.\
+> **!** set input to **/dev/random** or **/dev/urandom** for random data.
 
-**dd**
+---
 
-> create low level copies of entire drives or partitions.
+**`rsync`**\
+--> *( see chapter 3 )*
 
-`$ dd if=input of=output status=progress`
+---
 
-    bs=BYTES        set maximum block size.(512 default).
-    count=N         set number of input blocks to copy.
-    status=LEVEL    set the level of info to display with STDERR.
-                        none > display only errors.
-                        noxfer > do not display final stats.
-                        progress > periodical transfer stats.
+**`tar `**`[option] [file+++]`\
+-->  combine multiple files and directories into a single archive file.
 
-> set input to **/dev/zero** to zero an entite drive.\
-> set input to **/dev/random** or **/dev/urandom** for random data.
+**Tar** : archive\
+**Tarball** : compress + archive
 
+---> create
 
-**rsync**
+| **Option**|                           | **Description**|
+| -         | -                         | - |
+| **-c**    | **--create**              | Create a new tar archive |
+| **-f**    |                           | Specify the archive file to use |
+| **-u**    |**--update**               | Append only modified files to an existing archive |
+| **-g**    |**--listed-incremental**   | Create / Use a snapshot file for incremental backups|
+| **-z**    |**--gzip**                 | Compress archive with gzip |
+| **-j**    |**--bzip2**                | Compress archive with bzip2 |
+| **-J**    |**--xz**                   | Compress archive with xz |
+| **-v**    |**--verbose**              | Verbose mode |
 
-`$ rsync -avh *.txt TextFiles/` < local copy >\
-`$ rsync -avP -e ssh *.txt Adam@192.168.10.104:~` < remote copy >
+---> view
 
-> **OpenSSH** service must be running on both machines for remote copy.\
-> **IPv4** or **hostname** can be used.\
-> **~** indicates the destination folder.
+| **Option**| -                         |**Description** |
+| -         | -                         | - | 
+| **-d**    |**--compare**<br>**--diff**| Compare archive contents with files on disk and report differences |
+| **-t**    |**--list**                 | List the contents of a tar archive |
+| **-W**    |**--verify**               | Verify archive contents after writing (not usable with compression options) |
 
+---> extract
 
-    -e  --rsh       set communication protocol ( OpenSSH default )
-    -z  --compress  compress data during transfer.
-
-
-**tar**
-
-archive = tar
-archive + compress = tarball
-
-    -c  --create                create a tar archive.
-    -f                          point to archive file.
-    -u  --update                append modified files.
-    -g  --listed-incremental    create incremental or full archive based on metadata in provided file.
-    -z  --gzip                  tarball with gzip.
-    -j  --bzip2                 tarball with bzip2.
-    -J  --xz                    tarball with xz.
-    -v  --verbose               verbose output.
-
-    -d  --compare   --diff      compare tar archives files with external files and list differences.
-    -t  --list                  display tar content.
-    -W  --verify                verify each file as it is being processed, cannot be used with compression.
-
-    -x  --extract   --get       extract files.
-    -z  --gunzip                uncompress with gzip.
-    -j  --bunzip2               uncompress with bzip2.
-    -J  --unxz                  uncompress with xz.
-
-`$ tar -zcvf TextArchive.tar.gz *.txt` < create a compressed archive of all text files in the dir >
+| **Option**| -                         |**Description**|
+| -         | -                         | - |
+| **-x**    | **--extract**<br>**--get**| Extract files from an archive |
+| **-z**    | **--gunzip**              | Decompress **.gz** compressed archive |
+| **-j**    | **--bunzip2**             | Decompress **.bz2** compressed archive |
+| **-J**    | **--unxz**                | Decompress **.xz** compressed archive |
 
 > tar command can use old style options\
-> `tar zcvf` is also valid.\
-> `tar z c v f` is not.
+> **`tar -zcvf `** : Valid.\
+> **`tar zcvf `** : Valid.\
+> **`tar z c v f `** : Invalid.
 
-`$ tar -g Backup.snar -Jcvf  backup.tar.xz *.txt`
-< create a snapshot metadata file (snar) and the archive file ( tar.xz ) >
+`$ tar -g Backup.snar -Jcvf  backup.tar.xz *.txt`\
+--> create a snapshot metadata file (snar) and the archive file ( tar.xz ).
 
-`$ tar -g Backup.snar -Jcvf  backup_increment_1.tar.xz *.txt`
-< create the incremntal backup using the same metadata file (snar) >
+`$ tar -g Backup.snar -Jcvf  backup_increment_1.tar.xz *.txt`\
+--> create an incremntal backup using the snapshot metadata.
 
-> tar command views full backup as **level 0** and each incremntal backup as increments ( 1,2,3,...)
+> **!** tar command views full backup as **level 0** and each incremntal backup as increments ( 1,2,3,...)
 
-`$ tar -df backup.tar.gz` < compare files to originals >
-
-`$ tar -zxvf backup.tar.gz` < extract files to current dir >
-
+---
 
 ## OFFSITE BACKUP
 
-**scp**
+**`scp `**`[option] [user]@[host]:[source]+++ [user]@[host]:[directory]`\
+--> securely transfer files between local <- -> remote & remote <- -> remote hosts over **SSH**
 
-- employes OpenSSH.
-- **cannot resume** interrupted transfers.
-- suited for small files.
-- will overwrite any file without confirmation.
+> **!** best suited for **small files** becouse it **cannot resume** interrupted transfers and **overwrites** existing files without confirmation.
 
-`scp Adam@192.168.10.104:backup.tar Robert@192.168.10.106:~`
-< remote to remote copy >
+| **Option**| **Description**|
+| -         | - |
+| **-C**    | Enables compression during data transfer |
+| **-p**    | Preserves original file attributes (e.g., timestamps, permissions) |
+| **-r**    | Recursively copies directories and their contents|
+| **-v**    | Verbose mode |
 
-    -C  compress data for transfer
-    -p  preserve file attributes.
-    -r  recursive copy.
-    -v  verbose output.
+---
 
-**sftp**
+**`sftp `**`[user]@[host]`\
+--> Interactive command-line tool used to transfer files securely over **SSH**.
 
-- employs OpenSSH
-- more interactive than scp
-
-`$ sftp Adam@192.168.10.104` < connect to remote machine >
-`> put backup.tar` < send the file to remote >
-`> ls` < list files in remote >
+`$ sftp Adam@192.168.10.104` ---> connect to remote host\
+`> put backup.tar` ---> send the file to remote\
 `> exit`
 
-    get         get a file/s from remote.( download )
-    reget       resume an interrupted get.
-    put         send a file/s to remote. ( upload )
-    reput       resume an interrupted put.
-    ls          list files in working dir of remote.
-    lls         list files in working dir of local.
-    cd          change working dir remote.
-    lcd         change working dir local.
-    mkdir       create a dir on remote.
-    lmkdir      create a dir on local.
-    progress    toggle progress display.
-    bye         exit.
-    exit        exit.
+| **Command**   |           | **Description**|
+| -             | -         | - |
+|**get**        |           | Download file(s) from the remote server|
+|**reget**      |           | Resume a previously interrupted**get** operation|
+|**put**        |           | Upload file(s) to the remote server|
+|**reput**      |           | Resume a previously interrupted**put** operation|
+|**ls**         | **lls**   | List files in the current remote / local working directory |
+|**cd**         | **lcd**   | Change the remote / local working directory|
+|**mkdir**      | **lmkdir**| Create a directory on the remote / local host|
+|**progress**   |           | Toggle the display of progress for file transfers|
+|**bye**        | **exit**  | Exit the **sftp** session|
+
+---
 
 ## BACKUP INTEGRITY
 
 **MD5**
 
-`$ md5sum backup.tar` < generate md5 **128-bit** hash for backup.tar >
+`$ md5sum backup.tar` ---> generate md5 **128-bit** hash for backup.tar
 
 **SHA**
 
-`$ sha256sum backup.tar` < generate sha256 hash for backup.tar >
+`$ sha256sum backup.tar` ---> generate **sha256** hash for backup.tar
 
-`$ ls -l /bin/sha???sum`\
-< searching for sha utitlities in your distro >
-< /usr/bin/ may also be searched >
+> **!** `$ ls -l /bin/sha???sum` ---> search for sha utitlities in your distro\
+> **!** `$ ls -l /usr/bin/sha???sum` ---> search for sha utitlities in your distro
