@@ -9,7 +9,7 @@
 |Option |               |Description|
 |-      |-              |-|
 |-a     |--all          |display all including hidden|
-|-d     |--directory    |show directory metadata instead of content|
+|-d     |--directory    |show directory metadata instead of content (`$ ls -ld dir1/`)|
 |-F     |--classify     |claasify each file using indicators|
 |-i     |--inode        |display files, folders with associated inode numbers|
 |-l     |               |display file, folder metadata|
