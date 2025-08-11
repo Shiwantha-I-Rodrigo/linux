@@ -14,183 +14,181 @@ Open Source projects may contain,
 
 **tar** can be used to bundle these files.
 
-`$ tar -zcvf myproject.tgz project/*` < archive and compress files in project dir >
-`$ tar -zxvf myproject.tgz` < extract files from archive >
+`$ tar -zcvf myproject.tgz project/*` --->  archive and compress files in project dir\
+`$ tar -zxvf myproject.tgz` ---> extract files from archive
 
-> when extracting **gunzip** program will remove the archive file\
-> the **tar -z** program will not.
+> **!** when extracting **gunzip** program will **remove the archive** file\
+> **!** the **tar -z** program will not.
 
 ### COMPILE
 
-a compiling program is required to compile the source code.\
-GNU Compiler Collection ( **gcc** ) is a popular choice for,\
-programs written in C, C++, Ada, Java, Go, Fortan, etc...
+A compiling program is required to compile the source code. GNU Compiler Collection ( **gcc** ) is a popular choice for, programs written in C, C++, Ada, Java, Go, Fortan, etc...
 
-in addition a variety of header and library files are required when compiling\
-complex source codes. handling all of these can be very complicated.\
-the **make** utility can simplify this process by allowing\
-developers to create scripts for compilation and installation.
+In addition a variety of header and library files are required when compiling complex source codes. handling all of these can be very complicated. the **make** utility can simplify this process by allowing developers to create scripts for compilation and installation.
 
-1. **configure** utility analyses the system and customize the make script.
-2. **make** utility builds necessary lib and executables to install the program.
-3. **make install** install application files in respective locations.
+1. **configure script** analyzes the system and generates a customized **Makefile** based on the environment and available libraries.
+2. **make** utility uses the generated Makefile to compile the source code into libraries and executables.
+3. **make install** command uses the same **Makefile** to copy the compiled files into their appropriate system directories.
 
-> **ldd** utility can detect library files required for C applications.
+> **!** **ldd** utility can detect library files required for C applications.
 
 ## PACKAGING
 
-It's a hastle to compile and install software, to further simplify the process\
-pre compiled applications are bundled with all the required files to run\
-the software. these **packages** are managed by the distros **package manager**.
+It's a hastle to compile and install software, to further simplify the process pre compiled applications are bundled with all the required files to run the software. these **packages** are managed by the distros **package manager**.
 
 package managers track,
 - Application files.
 - Library dependencies.
 - Application version.
 
+<br>
+
 **DEBIAN**
 
-Debian uses .deb package files for distributing software.\
-**dpkg** handles deb packages.
+Debian uses **.deb** package files for distributing software.
 
-    -C                  search for broken packages and suggest fixes.
-    --configure         reconfigure an installed package.
-    --get-selections    display currently installed packages.
-    -i                  install package.
-    -I                  info about an uninstalled package.
-    -l                  list installed packages matching the patern.
-    -L                  list installed files associated with the package.
-    -p                  info about an installed package.
-    -P                  purge package, inc config files.
-    -r                  remove package , leave config files.
-    -S                  search for package that owns the file.
+**`dpkg `**`[option] [package]`\
+--> handles **manually provided** deb packages.
 
-`$ dpkg -l openssh*` < list packages with 'openssh' in the name >     
+| **Option**|                       | **Description** |
+| -         | -                     | - |
+| **-C**    |                       |Scans for broken packages and suggests possible fixes|
+|           |**--configure**        |Reconfigures an already installed package|
+|           |**--get-selections**   |Lists all currently selected (installed) packages|
+| **-i**    |                       |Installs a specified package |
+| **-I**    |                       |Displays information about a package that is *not* yet installed |
+| **-l**    |                       |Lists installed packages that match a specified pattern|
+| **-L**    |                       |Lists all files installed by a specified package |
+| **-p**    |                       |Shows detailed information about an *installed* package|
+| **-P**    |                       |Purges a package, including its configuration files|
+| **-r**    |                       |Removes a package but keeps its configuration files|
+| **-S**    |                       |Searches for the package that owns a specified file|
+     
+---
 
 **REDHAT**
 
-Redhat uses .rpm package files for distributing software.\
-**rpm** handles rpm packages.
+Redhat uses **.rpm** package files for distributing software.
 
-    -b      build binary from source files.
-    -e      uninstall the package.
-    -F      upgrade an already installed package.
-    -i      install the package.
-    -q      query if the package is installed.
-    -U      install / upgrade package.
-    -V      verify if package files are present.
+**`rpm `**`[option] [package]`\
+--> handles **manually provided** rpm packages.
 
-`$ rpm -e zsh` < remove zsh package >
+| **Option**| **Description** |
+| -         | - |
+| **-b**    | Builds a binary package from source files |
+| **-e**    | Uninstalls the specified package |
+| **-F**    | Upgrades an already installed package to a newer version |
+| **-i**    | Installs the specified package |
+| **-q**    | Checks whether a specific package is installed |
+| **-U**    | Installs or upgrades a package |
+| **-V**    | Verifies the presence and integrity of package files |
+
+---
 
 ### REPOSITORIES
 
-repositories contain tested software. \
-there are official and 3rd part repos.
+- Repositories are sources of validated software packages.
+- There are repositories maintained by official developers and trusted third parties.
 
 **DEBIAN**
 
-**apt** is a frontend for the apt suite of tools, such as *apt-get* and *apt-cache*.
-- apt-get < install, update, remove packages >
-- apt-cache < provide info about the package database >
+> **!** apt tools rely on **/etc/apt/sources.list** file to list repositories and any 3rd party repo can be added here.
 
-apt tools rely on **/etc/apt/sources.list** file to list repositories.\
-any 3rd party repo can be added here.
+**apt** : a frontend for the apt suite of tools, such as **apt-get** and **apt-cache**.
 
-    >> apt-cache
-        depends         show dependencies required for package.
-        pkgnames        list all packages installed on system.
-        showpkg         show info about the package.
-        stats           show package stats.
-        unmet           show any unmet dependencies for packages.
-    
-    >> apt
-        install         install package
-        reinstall       reinstall installed package.
-        remove          remove package, keep config files.
-        autoremove      remove unnessasery dependency packages.
+**`apt-cache `**`[option] [command] [package]`\
+--> display information about packages and the package database.
 
-        list            list current installed packages.
-        purge           remove package and configuration / data.
-        satisfy         resolve dependencies for installed pakages.
-        search          search for a package.
-        show            show info on package.
-        full-upgrade    similar to upgrade, but removes any old packages\
-                        required to upgrade the entire system.
-        
+| **Command**    | **Description**|
+| -             | - |
+| **depends**   | Displays the dependencies required by a package |
+| **pkgnames**  | Lists all packages available in the system |
+| **showpkg**   | Shows detailed information about a specific package |
+| **stats**     | Displays statistics about the package database |
+| **unmet**     | Lists any unmet dependencies for installed packages |
 
-`$ sudo apt install vlc` < install vlc from repo >
+---
 
+**`apt `**`[option] [command] [package+++]`\
+--> manage packages.
+
+| **Command**       | **Description**|
+| -                 | - |
+| **install**       | Installs the specified package |
+| **reinstall**     | Reinstalls an already installed package |
+| **remove**        | Removes a package but keeps its configuration files |
+| **autoremove**    | Removes unnecessary dependency packages that are no longer needed |
+| **list**          | Lists currently installed packages |
+| **purge**         | Removes a package along with its configuration and data files |
+| **satisfy**       | Resolves dependencies for installed packages|
+| **search**        | Searches for a package in the repositories |
+| **show**          | Shows detailed information about a package |
+| **full-upgrade**  | Upgrades the system and removes old packages no longer needed |
+| **update**        | Updates the local package index from repositories|
+| **upgrade**       | Installs available upgrades for installed packages|
+
+---
 
 **REDHAT**
 
-yum < old >\
-dnf < new >
+> **!** **dnf** is the newer version of **yum**, and both use the **/etc/yum.repos.d** directory to store repository configuration files.
 
-**yum** and **dnf** use **/etc/yum.repos.d** folder to store repo files.
+**`dnf `**`[option] [package+++]`\
+--> manage packages
 
-    >> dnf
-        install         install package from repo.
-        autoremove      remove unnessasery dependency packages.
-        reinstall       reinstall package
-        remove          remove package and any package that depend on that package.
-        upgrade         upgrade package or all packages.
-        downgrade       downgrade the package to the version on repo.
+| **Command**           | **Description**|
+| -                     | - |
+| **install**           | Installs a package from a repository|
+| **autoremove**        | Removes unnecessary packages that were installed as dependencies|
+| **reinstall**         | Reinstalls a currently installed package|
+| **remove**            | Removes a package along with any packages that depend on it |
+| **upgrade**           | Upgrades one or more packages to the latest available versions|
+| **downgrade**         | Downgrades a package to the version available in the repository |
+| **list**              | Lists available or installed packages |
+| **check**             | Analyzes installed packages for problems|
+| **check-update**      | Checks for available updates for installed packages |
+| **clean**             | Clears cached data and temporary files used by repositories |
+| **distro-sync**       | Synchronizes installed packages to match versions in the current repositories |
+| **group**             | Manages groups of packages as a single unit |
+| **history**           | Displays the history of **dnf** transactions|
+| **info**              | Shows detailed information about available or installed packages|
+| **makecache**         | Downloads and stores metadata for enabled repositories|
+| **mark**              | Marks a package as manually installed |
+| **module**            | Manages modular content (module streams)|
+| **provides**          | Identifies the package that provides a specific file or feature |
+| **repoinfo**          | Displays detailed information about enabled repositories|
+| **repolist**          | Lists all configured and enabled repositories |
+| **repoquery**         | Searches repositories for information about packages|
+| **search**            | Searches package metadata for a specified keyword |
+| **shell**             | Opens an interactive shell to run multiple **dnf** commands |
+| **swap**              | Replaces one package with another (remove and install)|
+| **updateinfo**        | Displays information about available updates (eg, security, bug fixes)|
+| **alias**             | Defines a custom alias for one or more **dnf** commands |
+| **repository-packages**| Executes commands on all packages within a specific repository|
+| **upgrade-minimal**   | Upgrades only packages that provide security or bug fixes |
 
-        list            list available and installed packages.
-        check           analyse local packages for problems.
-        check-update    check update for the package.
-        clean           clean repo temp files.
-        distro-sync     downgrade or install packages to match current repos.
-        group           manage a set of packages as one entity.
-        history         list previous dnf commands.
-        info            info about installed and available packages.
-        makecache       download metadata for repos.
-        mark            mark a package as installed.
-        module          manage module packages
-        provides        show the package that installed the file.
-        repoinfo        show repo info.
-        repolist        list current repos.
-        repoquery       search repos for package.
-        search          search package metadata for keyword.
-        shell           interactive shell to enter multiple dnf commands.
-        swap            remove and reinstall package.
-        updateinfo      show update messages.
-        alias           define an alias to a list of other dnf commands.
-        repository-
-        packages        run command on all packages in repo.
-        upgrade-
-        minimal         upgrade only packages that provide a bug/security fix.
-
-
-`$ sudo dnf install vlc` < install vlc from repo >
+---
 
 ### APPLICATION CONTAINERS
 
-> Containers include all files required to run the application, on any platform.\
-> the downside is that dependencies are duplicated for each application.
+> **!** **Containers** package all the files and **dependencies** needed to run an application on any platform, but this can lead to **duplication** of dependencies across applications.
 
-**SNAP**
+**SNAP (Cannonical) & FLATPAK**
 
-! by cannonical.\
-*snapd* application manages *snap* applications.
+> **!** *snapd* manages *snap* applications.
 
-    list        list installed snap apps.
-    find        search snap repo.
-    info        info about the app.
-    install     install app.
-    remove      remove app.
-    disable     disable app.
-    enable      enable app.
+| **Command**   | **Snap** Description                  | **Command**   | **Flatpak** Description |
+| -             | -                                     | -             | - |
+| **list**      | Lists installed Snap apps             | **list**      | Lists installed Flatpak apps|
+| **find**      | Searches the Snap store               | **search**    | Searches the Flatpak repository |
+| **info**      | Displays information about an app     |               |  |
+| **install**   | Installs an app                       | **install**   | Installs an app |
+| **remove**    | Removes an app                        | **uninstall** | Removes an app|
+| **disable**   | Disables an installed app             |               |  |
+| **enable**    | Enables a previously disabled app     |               |  |
 
-**FLATPAK**
-
-`$ sudo dnf install flatpak`\
-`$ sudo flatpak remote-add --if-not-exist flathub` < add any repo, here flathub repo is added >
-
-    list        list installed flatpak apps.
-    search      search repo.
-    install     install app.
-    uninstall   unistall app.
+`$ sudo flatpak remote-add --if-not-exist flathub` -->  add the flathub repo or any 3rd party repo.
+> **!** **snap** has it's own repo but it's **automatically configured**, and  **3rd party repos** are **not** supported.
 
 **APP IMAGE**
 

@@ -1,204 +1,168 @@
 # OWNERSHIP AND PERMISSIONS
 
-## OWNER
+## OWNERSHIP
 
-The 3 Owners,
-1. Owner - each file / directory is assigned to a single owner.
-2. Group - each file / directory is assigned to a single group.
-3. Other - everyone else.
+1. **Owner** - user who owns the file / directory.
+2. **Group** - each file / directory is associated with a single group.
+3. **Others** - all other users on the system, who are not the owner and not in the group.
 
-> when creating users, many linux distros assign the user to a new group with name of the user.
+> **!** when creating users, many linux distros assign the user to a new group with same name as the user.
 
+---
 
+**`chown `**`[-R/-v] [login]:[group] [resource+++]`\
+--> change the owner and / or group.
 
-### chown
+---
 
-`$ sudo chown Adam file1.txt file2.txt`
-< set the 2 text files owner to Adam >
+**`chgrp`**`[-R/-v] [group] [resource+++]`\
+--> change the group ownership of a file or directory.
 
-`$ sudo chown Adam:HR_Group file1.txt file2.txt`
-< set the 2 text files owner to Adam and group to HR_Group >
-
-### chgrp
-
-`$ sudo chgrp HR_Group file1.txt file2.txt`
-< set the 2 text files group to HR_Group >
+---
 
 ## PERMISSIONS
 
-The 3 Permissions,
-1. Read [ r ]
-2. Write [ w ]
-3. Execute [ x ] run the file or list the content of the directory.
+1. **Read** [ r ]
+2. **Write** [ w ]
+3. **Execute** [ x ]
 
-.
-
+| Permission        | File                                              | Directory|
+| -                 | -                                                 | - |
+| **x** (execute)   | execute (**run**) the file as a script or program | enter or traverse the directory (**cd**)|
+| **r** (read)      | read file contents (**cat**)                      | list contents (**ls**)|
+| **w** (write)     | edit or modify the file (**vim**)                 | create, delete, or rename files inside(**touch**)|
 
     $ ls -l
-    -rwxrw-r-- 1 Adam HR_Group 1542 Jan 14 15:21 file1.txt
-    -rwxrw-r-- 1 Adam HR_Group 1542 Jan 14 15:21 file2.txt
+    -rwxrw-r-- 1 Adam HR_Group 1542 Jan 14 15:21 file1
+    -rwxrw-r-- 1 Adam HR_Group 1542 Jan 14 15:21 file2
 
-> the first value indicate the type of object.
+<img src="images/permissions.png">
 
-    file           -
-    link           i
-    directory      d
+---
 
-### chmod
+**`chmod `**``\
+--> change the permissions of files or directories.
 
 **Symbolic Mode**
 
-    u = user / owner
-    g = group
-    o = others
+|Symbol | Description|
+| -     | - |
+| **u** | User (Owner)|
+| **g** | Group|
+| **o** | Others|
+| **a** | All ( user, group and others )|
+| **+** | Add permission(s) to the existing set|
+| **-** | Remove permission(s) from the existing set|
+| **=** | Set exact permission(s), replacing any existing ones|
 
-    + add permission
-    - remove permission
-    = set permission
+`$ sudo chmod g+x file1.txt` ---> add x permission to the group
 
+**Octal Mode**
 
-`$ sudo chmod g+x file1.txt`\
-< add x permission to the group >
+|Octal | Permission|
+| -     | - |
+|**4**  | Read|
+|**2**  | Write|
+|**1**  | Execute|
 
-`$ sudo ug=rwx file2.txt`\
-< set owner and group permissions as rwx >
-
-
-Octal Mode
-
-    r = 4
-    w = 2
-    x = 1
-
-`$ sudo chmod 754 file1.txt`\
-< set permissions as **rwxr-xr--** >
+`$ sudo chmod 754 file1` ---> set permissions as **rwxr-xr--**
 
 <img src="images/perm_oct.png">
 
+---
+
 ## SPECIAL PERMISSIONS
 
-**User ID** SUID
+> **!** special permissions **overwrite execute** permissions.
 
-this bit tells the kernal to run the executable\
-with the file owners permissions and not the user executing it.
+| Special Bit   | Applies To            | Symbol| Octal | Description                                                                                                       | Setting |
+| -             | -                     | -     | -     | -                                                                                                                 | - |
+| **SetUID**    |files                  | **s** | **4** | Runs the file with **file owner's privileges**                                                                    | `$ chmod u+s file1`<br>`$ chmod 4754 file1`|
+| **SetGID**    |files & directories    | **s** | **2** | **Files** : Run with **file group’s privileges**<br>**Directories** : New files inherit the **directory's group** | `$ chmod g+s file1`<br>`$ chmod 2754 file1`|
+| **Sticky Bit**|Directories            | **t** | **1** | Users can only delete **their own files**, even if the directory is writable                                      | `$ chmod o+t dir1` / `$ chmod +t dir1`<br>`$ chmod 1754 dir`|
 
-`$ sudo chmod u+s file1.txt` < with symbolic mode >
+<img src="images/special_permissions.png">
 
-`$ sudo chmod 4754 file1.txt` < with octal mode >
+**s** : normal configuration (user / group has execution permisssion + special permission)\
+**S** : possible misconfiguration (user / group has **no** execution permission + special permission)
 
-it replaces the **x** permission of user.
-
--rw**s**r--r-x
-
-when setting SUID a Capital **S** is shown ,if even the owner\
-has no permission to execute the file or the file is unexecutable.
-
-**Group ID** SGID
-
-when set any file created in the directory are assigned to the directory group and not the user.\
-therefore any user in the group has same permissions to the file.
-
-`$ sudo chmod g+s /Folder` < with symbolic mode >
-
-`$ sudo chmod 2660 /Folder` < with octal mode >
-
-it replaces the **x** permission of group.
-
-drw-rw**s**---
-
-**Sticky Bit**
-
-protect file from deletion by anyone other than the owner.\
-often used with shared folders.
-
-`$ sudo chmod o+t /Folder` < with symbolic mode >
-
-`$ sudo chmod 1777 /Folder` < with octal mode >
-
-drwxrwxrw**t**
+---
 
 ## DEFAULT PERMISSIONS
 
-**user mask** feature define an octal value to be subtracted\
-from permissions when creating a new file or directory.
+**User Mask** : Define an octal value to be **subtracted** from permissions when creating a new file or directory.
 
-`$ umask` < current mask > \
-0022
+`$ umask` ---> get current mask (ie. 0022)
 
-first value represents the mask for special permissions.\
-next 3 values represent the mask permissions.
+> **!** 1st value represents the mask for **special permissions**. eventhough it **cannot** be set manually.
 
-default values for new files is **666** and for new directories **777**.
+`$ umask 013` ---> set umask for the session.
 
-    umask           new file            new dir
-    0000            666                 777
-    0002            664                 775
+> **!** to permenantly change umask, add it to the **~/.bash_profile** file.
 
-`$ umask 0022`
-< set umask for session >
-
-to permenantly change umask, add it to the ~/.bash_profile file.
+---
 
 ## ACL's
 
-Access Control List's allow setting permissions for multiple users and groups.
+**Access Control List** : allow setting permissions for multiple users and groups.
 
-**getfacl / setfacl**
+**`getfacl `**`[option] [resource+++]`\
+--> view the Access Control List (ACL) of a file or directory.
 
-`$ getfacl file1.txt`
+    $ getfacl file1
+    # file: file1
+    # owner: robert
+    # group: staff
+    user::rw-
+    user:bob:r--   # Bob has only read access.
+    group::r--
+    mask::r--
+    other::---
 
-    file : file1.txt
-    owner : Adam
-    group : HR_Group
-    user :: rw-
-    group :: r--
-    other :: ---
+**`setfacl`**`[option] [argument] [resource]`\
+--> grant fine-grained permissions on files and directories.
 
-`$ setfacl -m g:SALES_Group:rw file1.txt`
+| **Option**    | **Description**|
+| -             | - |
+| `-m`          | Modify or add an ACL entry|
+| `-x`          | Remove an ACL entry|
+| `-b`          | Remove all ACLs (reset to standard permissions)|
 
-- there is no output from setfacl command.
+|**argument**           |**Description**|
+| -                     | - |
+| `u:name:permissions`  | ACL for the **user** `name`|
+| `g:group:permissions` | ACL for the**group** `group`|
 
-`$ ls -l`
+> **!** multiple arguments can be passed as a comma ( ***,*** ) list.\
+> **!** multiple resources cannot be specified, unless piped as xarg's.\
+> **!** there is no output from `setfacl` command.
 
-    -rw-r-----+ 1 Adam HR_Group 1234 Jan 19 15:21 file1.txt
+    $ ls -l
+    -rw-r--r--+ 1 robert staff  1024 Aug 11 09:00 report.txt
+    drwxr-xr-x+ 3 robert staff  4096 Aug 11 09:30 project/
 
-- only standard permissions are shown
-- a (+) sign is added to indicate, additional ACL's are applied to the file.
+> **!** The **( + )** sign at the end of permissions is added to indicate that additional ACL's are applied.
 
-`$ getfacl file1.txt`
-
-    file : file1.txt
-    owner : Adam
-    group : HR_Group
-    user :: rw-
-    group :: r--
-    group : SALES_Group : rw-
-    mask :: rw-
-    other :: ---
-
-`$ setfacl -x g:SALES_Group file1.txt`
-< remove SALES_Group permissions >
-
-`$ setfacl -m d:g:SALES_Group:rw /Folder`
-< set permissions for Folder, new files created will inherit the ACL >
+---
 
 ## CONTEXT BASED PERMISSIONS
 
-in the previous **Discretionary Access Control ( DAC )** method,\
-there is nothing stopping file owners from giving any permission to other users.\
-therefore a **Mandatory Access Control ( MAC )** is used to allow admin to set rules.\
-**Role-Based Access Control** is a sub category of **MAC**.
+**Discretionary Access Control ( DAC )** : Ownership + permission bits + ACLs : (authority : owner)\
+**Mandatory Access Control ( MAC )** : Security labels + system-enforced policies : (authority : admin)
 
-- SELinux for RedHat.
-- AppArmor for ubuntu.
+In **DAC** there's nothing stopping file owner from giving any permission to any other user.\
+**MAC** is used to allow admins to set role based rules. **Role-Based Access Control** is a sub category of **MAC**.
 
 ### SELinux (REDHAT)
 
-Security Enhanced Linux is a project of NSA now integrated into RedHat 2.6+.\
-each time a user or process attempts to access an object SELinux intercepts the attempt\
-and evaluate it against defined policy rules.
+**Security Enhanced Linux** is a NSA project integrated into RedHat 2.6+.\
+Each time a user or process attempts to access an object, SELinux intercepts the attempt and evaluate it against pre-defined policy rules.
 
 **/etc/selinux/config** file controls basic opertaions.
+
+    SELINUX=enforcing
+    SELINUXTYPE=targeted
+
 * SELINUX
     - enforcing = enable policies and block unauthorized access.
     - permissive = log policy violations, doesn't enforce them.
@@ -210,163 +174,162 @@ and evaluate it against defined policy rules.
     - mls = multilayer security, military standard.(top secret, unclassified, public,...)
     - strict = for all daemons ( not recomended ).
 
-`$ sudo getenforce`
-    
-    Enforcing
+**`getenforce`**\
+--> check the current operational mode of SELinux. ( enforcing / permissive / disabled )
 
-`$ sudo sestatus`
+**`setenforce`**`[0/1]`\
+--> change the SELinux mode at runtime.
+- 0 : permissive
+- 1 : enforcing
 
-    SELinux status : enabled
-    SELinux mount : /sys/fs/selinux
-    ...
+**`sestatus`**\
+--> display the detailed status of SELinux
 
-#### Security Context
+    $ sestatus
+    SELinux status:                 enabled
+    SELinuxfs mount:                /sys/fs/selinux
+    SELinux root directory:         /etc/selinux
+    Loaded policy name:             targeted
+    Current mode:                   enforcing
+    Mode from config file:          enforcing
+    Policy MLS status:              enabled
+    Policy deny_unknown status:     allowed
+    Memory protection checking:     actual (secure)
+    Max kernel policy version:      33
 
-user:role:type:level
+---
 
-`$ ls -Z file1.txt`
+**Security Context**
 
-    unconfined_u : object_r : user_home_t : s0 file1.txt
+A security context is a **label** assigned to every:
+- File
+- Process
+- User
+- Port
+- etc..
 
-`$ ps -axZ | grep sshd`
+indicating what it’s allowed to do, based on the system’s security policy.
 
-    system_u : system_r : sshd_t : s0-s0:c0.c1023 1029 ? Ss 0:00
+Context Format : ***user : role : type : level***
+```
+    # File Context
+    $ ls -Z file1
+    -rw-r--r--. root root system_u:object_r:httpd_sys_content_t:s0 file1   
+```
 
-! indicate that **sshd** process is a system process.
+```
+    # Process Context 
+    $ ps -axZ | grep sshd
+    system_u:system_r:sshd_t:s0   1234 ? 00:00:00 sshd
+```
 
-**Type Enforcement** is defining what objects in a specific type security context can access\
-objects of another type security context.\
-eg - an application labeled with type security context **sshd_t** can only access files\
-labeled with type security context **sshd_t**.
+**Type Enforcement (TE)** defines what objects with a specific type (security context) can access other types
+- ie. an application labeled with **sshd_t** can only access files labeled with **sshd_t**, unless the policy allows otherwise.
 
-selinux maintain policies as text files in **/etc/selinux/** directory structure.\
-eg - **/etc/selinux/targeted/** directory.
+**SELinux policies** are stored as text files under the **/etc/selinux/** directory structure
+- ie. /etc/selinux/**targeted**/.
 
-creating own policies can be complicated, therfore polices can be\
-listed / installed / removed as modules using **semodule** utility.
+**Policy management** is handled through the `semodule` utility, which allows you to list, install, and remove **policy modules**, making it easier than writing custom policies from scratch.
 
-`$ sudo getsebool -a`
-< list all policies >
+**`getsebool`**`[option] [boolname]`\
+--> Shows the current on/off status of SELinux booleans.
 
+    $ getsebool -a  #all
     abrt_anon_write --> off
     antivirus_can_scan_system --> off
-    ...
+    httpd_enable_homedirs --> on
     ...
 
-`$ sudo setsebool antivirus_can_scan_system on`
-< change boolean >
+**`setsebool`**`[option] [boolname] [on/off]`\
+--> Enables or disables SELinux booleans for the session.
+
+    $ setsebool -P abrt_anon_write on #permanent
+
+---
 
 ### AppArmor (DEBIAN)
 
-! only controls files and network ports that applications have access to.
+Restricts what **programs** can do, based on predefined security profiles.
 
-AppArmor is installed by default, but tools are not.\
-install **apparmor-utils** and **apparmor-profiles**.
+**Application-level confinement** : if an application is compromised, it can only access the specific files and resources allowed in its profile.
 
-- profiles for applications are stored in **/etc/apparmor.d/**
-- each profile is a text file, defining which files and ports the app has access to.
-- profile name is a reference to app path. (ie, **usr.bin.mysqld** ).
+AppArmor may be installed by default, but the **apparmor-utils** and **apparmor-profiles** packages must be installed to use its **management tools** and **predefined profiles**.
 
-`$ aa-status`\
-< AppArmor status >
+AppArmor profiles are plain-text files stored in **/etc/apparmor.d/**
+- sub directories are named after the application ( ie. **usr.bin.mysqld** )
+- define the files and ports the application is allowed to access
 
-`$ aa-unconfined`\
-< list of active ports without a profile >
+| **Command**                       | **Description**|
+| -                                 | - |
+| `aa-status`                       | Shows the current status of AppArmor (loaded/enforcing profiles)|
+| `aa-unconfined`                   | Lists running processes that are **not confined** by any AppArmor profile|
+| `aa-complain /usr/sbin/tcpdump`   | **Complain mode** — violations are logged but not blocked|
+| `aa-disable /usr/sbin/tcpdump`    | **Disables** the AppArmor profile for the specified application|
+| `aa-enforce /usr/sbin/tcpdump`    | **Enables** the AppArmor profile — violations are blocked|
 
-`$ aa-complain /usr/sbin/tcpdump`\
-< violations wil be logged but not blocked >
-
-`$ aa-disable /usr/sbin/tcpdump`\
-< disable the profile >
-
-`$ aa-enforce /usr/sbin/tcpdump`\
-< enable profile >
+---
 
 ## USER TYPES
 
-* Root / Super User
-    - main admin account on system.
-    - userID 0.
-    - access to all files and directories regardless of permission settings.
+| **User Type**             | **Description** |
+| -                         | - |
+| **Root / Super User**     | · **UID : 0**<br> · Primary administrative account on the system<br> · Has unrestricted access to all files, commands and resources|
+| **Service/System User**   | · **UID: 1 – 999**<br> · Accounts created by the system or packages to run services and daemons<br> · **Login disabled** ( **\*** or **!** in **/etc/shadow** )<br> · **Shell disabled** ( **nologin** or **false** in **/etc/passwd** )|
+| **Standard User**         | · **UID: 1000 +** <br>· Regular login users created by an administrator or during system setup<br> · Can perform admin tasks via **privilege escalation** ( **sudo** )|
 
-* Standard 
-    - userID 1000+.
-    - use privilage escalation to perform admin tasks.
-
-* Service
-    - created by system to start services.
-    - UserID 1-999.
-    - login is disabled.( * in shadow file )
-    - shell access is disabled. ('nologin' as /etc/passwd default shell)
+---
 
 ### ESCALATING PRIVILEGES
 
-- su
-    * substitute user.
-    * password for target account.
+| **Command**   | **Description**|
+| -             | - |
+| **`su`**      | · Stands for **"substitute user"** <br> · Switches to another user account (defaults to root if no username is provided) <br> · Requires the **password of the target account**|
+| **`sudo`**    | · Stands for **"substitute user do"** <br> · Executes a command as another user (typically root) <br> · Uses the **current user's own password** <br> · The user must be listed in the **/etc/sudoers** file <br> · **sudoers** defines which users or groups can run commands as root (ie. **sudo** group on Debian/Ubuntu, **wheel** group on RHEL/Fedora) <br> · Always edit the sudoers file using the **`$ EDITOR=vim visudo`** command to prevent syntax errors|
+| **`sudoedit`**| · Similar to `sudo`, but only for **editing files with elevated privileges** <br> · Opens the file in a text editor as root without giving full shell access|
 
-- sudo
-    * substitute user do.
-    * own password.
-    * user must be in /etc/sudoers file.
-
-- sudoedit
-    * similar to sudo.
-    * allows opening a text file with admin priviledges.
-
-> **sudoers** also define groups that have admin access.\
-> ie, **sudo** - debian / **wheel** - redhat.\
-> never edit the **sudoers** file directly, use **visudo** command.
-
-`$ EDITOR=vim visudo`
+---
 
 ### RESTRICTING USERS
 
-- ulimit
+**`ulimit`**`[option] [limit]`\
+--> control or limit access to system resources such as memory, CPU time, and the number of processes.
 
-restrict access to system resources.
+|**Option** | **Description** |
+| -         | - |
+| **-a**    | Lists all current limits for the **current shell/user** |
+| **-b**    | Sets the **maximum socket buffer size** |
+| **-f**    | Sets the **maximum file size** (in blocks) that can be created|
+| **-l**    | Sets the **maximum amount of memory** that can be **locked in RAM** |
+| **-s**    | Sets the **maximum stack size** |
+| **-t**    | Sets the **maximum CPU time** allowed (in seconds)|
+| **-u**    | Sets the **maximum number of user processes** that can run simultaneously |
+| **-v**    | Sets the **maximum virtual memory size** (address space)|
+| **-P**    | Sets the **maximum number of pseudo-terminals** |
+| **-T**    | Sets the **maximum number of threads** per process|
 
-    -a      list limits for current account.
-    -b      set max socket buffer size.
-    ...
-    -f      set max file size.
-    ...
-    -l      set max memory that can be locked.
-    ...
-    -s      set max stack size.
-    -t      set max CPU time allowed.
-    -u      set max number of simultaneous processes.
-    -v      set max virtual memory.
-    ...
-    -P      set max number of pseudo-terminals.
-    -T      set max threads.
+---
 
-- chattr
+**`chattr `**`[+/-][attribute] [file/directory]+++`\
+--> add or remove special file attributes on files and directories in ext2/ext3/ext4 file systems.
 
-change file attributes.
+| **Attribute** | **Description** |
+| -             | - |
+| **a**         | File can only be **opened in append mode** — data can only be added, not removed |
+| **A**         | **Access time is not updated** when the file is read (improves performance)|
+| **c**         | File is **automatically compressed** on disk |
+| **C**         | File is **not copied-on-write** on a journaling filesystem |
+| **d**         | File is **excluded from backups** using the **dump** utility |
+| **D**         | **Synchronous directory updates** — changes in the directory are written to disk immediately |
+| **E**         | File is **encrypted** by the filesystem (if supported) |
+| **F**         | For directories: **path lookups are case-insensitive** |
+| **i**         | File is **immutable** — cannot be modified, deleted, or renamed (even by root) |
+| **s**         | When deleted, file contents are **securely wiped** (blocks are zeroed on disk) |
+| **S**         | File updates are **synchronously written** to disk — bypasses cache|
+| **u**         | File contents are **saved on delete**, allowing for possible undeletion|
+| **V**         | Enables **file authentication** (used in integrity-protected filesystems)|
 
-    a       can only open in append mode.
-    A       access time is not changed when opening file.
-    c       auto compress file on the disk.
-    C       file is not auto copied on write to a journaling filesystem.
-    d       donot backup file with dump program.
-    D       all changes are syncronuosly written to disk without caching.
-    ...
-    E       encrypted by the filesystem.
-    F       when applied to a dir, all path lookups are case insensitive.
-    i       file can't be modded or deleted.
-    ...
-    s       if the file is deleted, it's blocks are zeroed and written to disk.
-    S       changes are syncronuosly written to disk, no buffer.
-    ...
-    U       sve content on delete, allowing undelete.
-    V       apply file authentication.
+**`lsattr `**`[-R] [file/directory]`\
+--> list special file attributes on files and directories in ext2/ext3/ext4 file systems.
 
-
-`$ lsattr file1.txt`
-< view current attribs >
-
-    ----i-------------- file1.txt
-
-`$ sudo chattr -i file1.txt`
-< change attribs >
+    $ lsattr file1
+    ----i-------------- file1

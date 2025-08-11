@@ -1,99 +1,96 @@
 # KERNAL MODULES
 
-> modules are self contained library files that can be loaded and unloaded dynamically.
+> **!** Self-contained pieces of code that **extend the functionality** of the kernel and can be **loaded and unloaded** into the kernel **dynamically**, without requiring a reboot.\
+> **!** Typically has a **.ko** extention
 
-Types of modules,
-- Device Drivers
-    * facilitate communication with Hardware.
-- Filesystem Drivers
-    * for filesystem I/O.
-- Network Drivers
-    * for implementing network protocols.
-- System Calls
-    * additional functions for adding / modding system services.
-- Executable Loaders
-    * additional executable formats.
+---> Types of Modules
 
-Modules are located at **/lib/modules/**.
+| **Module Type**       | **Description** |
+| -                     | - |
+| **Device Drivers**    | Enable communication between the kernel and hardware devices |
+| **Filesystem Drivers**| Handle input/output operations for filesystems |
+| **Network Drivers**   | Implement network protocols and manage network interfaces|
+| **System Calls**      | Provide additional or modified system service functions|
+| **Executable Loaders**| Support additional executable file formats |
 
-config files for modules can be found at,
-- /etc/modprobe.d/ or /etc/modules-load.d/
-    * config files craeted at system installation or by an admin.
+---> Configuration
 
-- /lib/modprobe.d/
-    * config files for 3rd party packages.
+| **File Location**                             | **Description**|
+| -                                             | - |
+| **/lib/modules/**                             | Directory where kernel modules are stored|
+| **/etc/modprobed/**<br>**/etc/modules-loadd/**| Configuration files created during system installation or by an administrator|
+| **/lib/modprobed/**                           | Configuration files provided by third-party packages|
+| **/usr/lib/modprobed/**                       | Hard link to **/lib/modprobed/**|
+| **/run/modprobed/**                           | Configuration files generated dynamically at runtime|
 
-- /usr/lib/modprobe.d/
-    * hardlink to /lib/modprobe.d/
+> **!** older OS'es had only **/etc/modules.conf** file to store configs.
 
-- /run/modprobe.d/
-    config files generated at runtime.
+| **Command**   | **Description** |
+| -             | - |
+| `dmesg`       | Displays the current kernel ring buffer messages |
+| `lsmod`       | Shows a brief list of loaded kernel modules|
+| `modinfo`     | Provides detailed information about a specific kernel module |
 
-> old OS'es had only /etc/modules.conf file to store configs.
+> **!** Module errors at boot and runtime kernal messages are generated and stored in a **ring buffer** and later saved to **/var/log/dmesg**.\
+> **!** A ring buffer is a fixed-size FIFO structure in memory where old data is overwritten by new data when full.
 
-**dmesg** - display current kernal ring buffer.\
-**lsmod** - brief module info.\
-**modinfo** - detailed module info.
+    $ lsmod
+    Module                  Size  Used by
+    nf_conntrack_netlink    49152  0
+    nfnetlink               16384  1 nf_conntrack_netlink
+    xt_conntrack            16384  2
+    nf_conntrack           139264  3 nf_conntrack_netlink,xt_conntrack
+    xfs                   1105920  1
+    libcrc32c               16384  1 xfs
 
-on module errors at boot or runtime kernal messages are generated.\
-kernal messages at boot may be stored in **/var/log/dmesg** file.
+**Used by** : Number of instances using this module and / or dependent modules.
 
-> ring buffer is a fixed size FIFO data structure.\
-> old data is deleted to make room for new data.
-
-    lsmod
-    Module      Size        UsedBy
-    af_packet   49154       4   bridge
-
-    Module = module name
-    Size = module size
-    UsedBy = number of processes using the module + name of other modules using the module.
-
-> kernal modules typically has a .ko extention
+---
 
 ## INSTALLING KERNAL MODULES
 
-**insmod**
-- insert a single module to kernal.
-- does not load dependecies.
-- requires absolute file path.
+**`insmod `**`[module_absolute_path]`\
+--> manually load a kernel module into the currently running kernel but does **not** handle **dependencies**.
 
-`$ sudo insmod /lib/modules/kernal/drivers/joydev.ko`\
+---
 
-**modprobe**
-- load required dependencies.
-- use insmod to insert modules.
+**`modprobe `**`[option] [module_name]`\
+--> insert or remove kernel modules, with automatic dependency management.
+
+- use **-r** option to remove a module.
+- use **/lib/modules/Robert/** to look for modules.
+- use `insmod` internally.
 - use **/lib/modules/modules.dep** file to determine dependencies.
 
-`$ grep - joydev /lib/modules/modules.dep`
+```
+$ grep - joydev /lib/modules/modules.dep`
 
-    kernal/drivers/md/joydev.ko:
-    kernal/drivers/md/joy-res.ko
-    kernal/drivers/md/joy-aud.ko
+kernal/drivers/md/joydev.ko:
+kernal/drivers/md/joy-res.ko
+kernal/drivers/md/joy-aud.ko
+```
 
-    according to above output, joydev module requires,
-    joy-res and joy-aud modules as dependencies.
+> **!** according to above output, **joydev** module requires, **joy-res** and **joy-aud** modules as dependencies.
 
-`$ sudo modprobe joydev`
+---
 
-**depmod**
+**`depmod `**\
+--> analyze kernel modules, generate dependencies and update dependency files (ie. **modules.dep**).
 
-- scan for undetected devices.
+> **!** while **depmod** itself doesn’t identify new hardware, it creates the infrastructure that makes automatic hardware support possible.
 
-`$ sudo depmod`
+1. `depmod` generates files like **modules.alias**, which maps device IDs (hardware identifiers) to kernel modules.
+2. This mapping allows `modprobe` to know which module to load when a specific device is present.
+3. `udev`, the device manager, uses this system to automatically load drivers for new hardware.
 
-scans the system for new / undetected devices and determine any required modules,
-determine depndencies, update modules.dep file.
-
+---
 
 ## REMOVING KERNAL MODULES
 
-**rmmod**
+**`rmmod`**\
+--> manually remove (unload) a kernel module from the currently running kernel.
 
-- does not remove dependencies.
+- **Fails** if the module is in use (ie. by a device or another module).
+- Does **not** handle **dependencies**, must remove dependent modules first.
 
-`$ sudo rmmod joydev`
-
-**modprobe**
-
-`$ sudo modprobe -r joydev`
+> **!!!** Use `modprobe -r` instead.
