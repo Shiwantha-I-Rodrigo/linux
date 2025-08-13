@@ -12,425 +12,443 @@ The firewall ACL identifies a network packet by reviewing it's control informati
 - Outbound port
 - Network status
 
-The firewall takes action on the packet
-- Accept
-- Reject
-- Drop
-- Log
+The firewall takes action on the packet.
+- Accept: Allows the packet through.
+- Reject: Blocks the packet and sends a response to the sender.
+- Drop: Silently discards the packet without notifying the sender.
+- Log: Records information about the packet for monitoring or analysis.
 
-> Reject send a response to the sender, while Drop does not.
+The **/etc/services** file is not a configuration file.\
+It is a reference that documents network services along with their associated port numbers, protocols, and optional aliases.\
+It is used by various system utilities (ie. netstat) and firewall tools (ie. UFW) to map port numbers to service names.
 
-**/etc/services** file documents application services and their ports, protocols and aliases.\
-! this is not a config file.\
-this file is used by various utilities (netstat,..) and firewalls (UFW,...).
+**Format** : [ service_name ] [ port_number/protocol ] [ aliases ]
 
-Format - **serviceName PortNumber/ProtocolName [ Aliases ]**
+Ports in the range 1–1023 are known as privileged ports, and only the superuser (root) can bind services to these ports.
 
-ports 1 - 1023 are privileged ports. onlu super user can run services on these.
+---
 
-Firewalls can operate in Following methods,
+**FIREWALL MODES**
 
-- Stateless
-    * older of the two.
-    * focus only on individual packets.
-    * faster.
-    * vuneralbe to certain attacks.
-    * ACL rules are static, firewall must reboot.
+| Feature               | **Stateless Firewall**                                                    | **Stateful Firewall**|
+| -                     | -                                                                         | - |
+| **Generation**        | Older technology                                                          | Newer technology|
+| **Packet Handling**   | Inspects individual packets only                                          | Monitors and tracks active network connections|
+| **Performance**       | Generally faster                                                          | Slightly slower due to deeper inspection|
+| **Security**          | More vulnerable to certain types of attacks                               | Resistant to attacks involving fragmented or multi-packet data|
+| **Attack Surface**    | Less effective against complex threats                                    | More vulnerable to DDoS attacks due to state tracking|
+| **Rule Management**   | Uses static Access Control Lists (ACLs); reboot often required for changes| Rules can adapt based on connection states; more flexible|
 
-- Stateful
-    * monitor active network connections.
-    * group packets.
-    * look for fragmented packets.
-    * not vunerable to attacks using multiple spread packets.
-    * more vunerable to DDoS attacks.
+> **!** stateful firewall build and maintain a connections table by observing the traffic, allowing faster access times for established connections.
 
-stateful firewall build and maintain a connections table by observing the traffic, 
-it uses this table to monitor individual connections. allowing faster access times for established connections.
+---
 
 ## FIREWALL TECHNOLOGIES
 
-**netfilter** embeded in the kernal offering packet filtering services.\
+**Netfilter** is a packet filtering framework integrated into the Linux kernel, providing essential networking and firewall capabilities.
 
-- **netfilter** is used by,
-    + **iptables** firewall software.
-    + **firewalld** service.
-    + **nftable** service.
-    + **Uncomplicated Firewall** software.
+It is utilized by various firewall tools and services, including :
 
-> **iptables** & **nftable** has low level access to **netfilter** making them faster.
+1. firewalld
+2. iptables
+3. nftables
+4. Uncomplicated Firewall (UFW)
+
+**iptables** and **nftables** interact directly with Netfilter at a low level, offering better performance and efficiency compared to higher-level tools.
+
+> **!** DO NOT use **systemctl** to enable **ufw** service or any other firewall service.
+
+---
 
 ### firewalld
 
-* provides packet filtering and interfaces for the GUI and CLI.
-* IPv4 / IPv6
-* AKA dynamic firewall daemon, can change ACL rules without reboot.
-* traffic is grouped into predefined rule sets ( **Zones** ).
-* each **Zone** has it's own config file ( **Trust level** ).
-* a connection can be member of only one **Zone**. 
-* traffic can be grouped by System Interface or Source IP.
-* **/usr/lib/firewalld/zones/**
+- A dynamic firewall daemon for IPv4/IPv6 that supports packet filtering and provides GUI/CLI interfaces.
+- It allows real-time rule changes without rebooting.
+- Traffic is organized into **Zones**, each with its own trust-level config file (**/usr/lib/firewalld/zones/**).
+- Connections can belong to only one Zone, defined by system interface or source IP.
 
-.
+| **Zone**      | **Description**|
+| -             | - |
+| **drop**      | Drop all incoming traffic; allow outbound|
+| **block**     | Allow only outbound traffic; reject incoming with `icmp-host-prohibited` or `icmp6-adm-prohibited`|
+| **public**    | Allow selected incoming connections; suited for public networks|
+| **external**  | Allow selected incoming connections; used for external networks with masquerading enabled|
+| **dmz**       | Allow selected incoming connections; used in a DMZ; limited internal network access|
+| **work**      | Allow selected incoming traffic; intended for mostly trusted networks|
+| **home**      | Same as *work*; intended for trusted home environments|
+| **internal**  | Same as *work*; intended for trusted internal networks|
+| **trusted**   | Allow all incoming and outgoing connections|
 
-    Predefined Zones
-
-    drop        drop all incomming, allow outbound.
-
-    block       accept only connections originating from the system,
-                reject other packets and send "icmp-host-prohibited".
-                or "icmp6-adm-prohibited" message back.
-
-    public      accept only selected incomming connections,
-                used in public setting.
-
-    external    accept only selected incomming connections.
-                used in external networks.
-                when "masquerading" is enabled on local system.
-
-    dmz         accept only selected incomming connections.
-                used in the demilitirized zone.
-                publically accessible, has limited access to internal network.
-
-    work        accept only selected incomming network traffic.
-                where other systems are mostly trusted.
-
-    home        accept only selected incomming network traffic.
-                where other systems are mostly trusted.
-
-    internal    accept only selected incomming network traffic.
-                where other systems are mostly trusted.
-
-    trusted     accept all network connections.
-
-
-**firewall-cmd** allows intercating with the firewalld config settings.
-
-
-`$ ls /usr/lib/firewalld/zones`
-
+    $ ls /usr/lib/firewalld/zones
     block.xml   drop.xml   ...
 
-! it is better to change settings using firewalld utilities, rather than manually editing "xml".
+> **!** It’s recommended to use firewalld utilities to change settings, rather than editing XML files manually.
 
-`$ firewall-cmd`
+---
 
-    --get-zones                 get a list of available zones.
-    --get-default-zone          show default zone. (1)
-    --set-default-zone          set the default zone.
-    --get-active-zones          list active connections with corresponding zones.
-    --get-services              list firewalld services. (3)
-    --add-service=srv           add a system service to firewalld.
-    --list-services             list configured services.
-    --panic-on                  in case of emergency, block traffic.
-    --panic-off                 re-enable traffic.
-    --runtime-to-permenent      make configuration changes permenent. (2)
-    --permenent                 use with other commands, to add changes to both runtime and permenent environments.
-    --direct                    firewalld direct interface.
+**`firewall-cmd`**`[option]`\
+--> (CLI) tool used to manage firewalld, the dynamic firewall service in many Linux distributions
 
+| **Option**                    | **Description**|
+| -                             | - |
+| **--get-zones**               | Lists all available zones|
+| **--get-default-zone**        | Displays the current default zone¹|
+| **--set-default-zone=<zone>** | Sets the default zone for unassigned interfaces or sources|
+| **--get-active-zones**        | Shows active network interfaces and their associated zones|
+| **--get-services**            | Lists all predefined firewalld services²|
+| **--add-service=<service>**   | Adds a specified system service to the selected zone|
+| **--list-services**           | Lists services currently allowed in the selected zone|
+| **--panic-on**                | Enables panic mode: blocks all network traffic|
+| **--panic-off**               | Disables panic mode: restores normal traffic flow|
+| **--runtime-to-permanent**    | Saves current runtime configuration to the permanent environment³|
+| **--permanent**               | Applies changes to the permanent configuration; use with other options|
+| **--direct**                  | Accesses the direct interface for advanced/custom rule manipulation|
 
-1. **Network Manager** is integrated with **firewalld**, the default zone is applied to new network devices.
+> **!** When used with **--zone=zone** or **--policy=policy**, the command affects the specified zone or policy; otherwise, it affects the **default zone**.
 
-2. Any configuration changes is only applied to the firewalld **runtime environment**.\
-   they must be added to the **permenent environment** by command.
-
-3. **firewalld** services are predefined configuration sets for system services such as DNS,etc...
-
-`$ firewall-cmd --add-service=dns --zone=dmz`\
-< add DNS services to dmz zone >
-
+1. The **default** zone is automatically applied to new network interfaces managed by **NetworkManager**.
+2. **Firewalld** services are predefined sets of rules (ports, protocols) for common services like ssh, http, dns, etc.
+3. Configuration changes affect only the runtime environment unless explicitly saved to the permanent configuration.
+```
+    $ firewall-cmd --add-service=dns --zone=dmz     #add DNS services to dmz zone
     success
+```
 
-`$ firewall-cmd --list-services --zone=dmz`
-
-    ssh dns
+---
 
 ### iptables
 
-> ! **iptables** must not run alogside **firewalld**
+**Tables**: These are rule sets for different purposes. 
 
-iptables service uses a process called "chains" to handle network traffic.
+| **Table**    | **Purpose**                                                              |
+| ------------ | ------------------------------------------------------------------------ |
+| **filter**   | Allows or blocks packets based on rules defined in the chain.            |
+| **mangle**   | Alters packet properties (ie. TOS, TTL) during processing.               |
+| **nat**      | Changes source or destination addresses of packets (used for NAT).       |
+| **raw**      | Applies settings like `NOTRACK` to bypass connection tracking.           |
+| **security** | Applies Mandatory Access Control (MAC) rules using systems like SELinux. |
+
+<img src="images/iptables.png">
 
 <img src="images/iptables_chains.png">
 
-- PREROUTING - handles packets before the routing.
-- INPUT - handles packets destined for local system.
-- OUTPUT - handles packets from output from local system.
-- FORWARD - handles packets being forwarded to a remote system.
-- POSTROUTING - handles packets after "forward" filter.
+**Chains**: Each table contains chains, which are lists of rules applied to packets.
 
-each chain contains tables that define rules for handling passing packets.\
-there are 5 table types,
+| **Chain**       | **Description**                                                           |
+| --------------- | ------------------------------------------------------------------------- |
+| **PREROUTING**  | Handles incoming packets **before** any routing decision is made.         |
+| **INPUT**       | Handles packets **destined for the local system**.                        |
+| **OUTPUT**      | Handles packets **originating from the local system**.                    |
+| **FORWARD**     | Handles packets **passing through the system** to another destination.    |
+| **POSTROUTING** | Handles packets **after routing**, just **before they leave the system**. |
 
-- filter
-    * allow or block packets from exiting the chain.
-- mangle
-    * change features of passing packets.
-- nat
-    * chage addresses of passing packets.
-    * NAT
-- raw
-    * apply a "NOTRACK" setting to packets that are not to be tracked.
-- security
-    * apply manadatory access control rules.
+---
 
-packets are,
-heads.of.state.2025.1080p.web.dl.hevc.x265.rmteam
-- ACCEPT
-- DROP
+Each chain has a **policy**, which is the default action applied to packets if they don’t match any rules in the chain.
 
-.
+- ACCEPT: Allow the packet.
+- DROP: Silently discard the packet.
+- REJECT: Discard the packet and send an error response.
 
-    -L [chain]                  List rules for [chain] / all chains.
-    -S [chain]                  List rule details for [chain] / all chains.
-    -t [table]                  Apply the command to [table] / filter table (default).
-    -A [chain] [rule]           Add new [rule] to [chain].
-    -I [chain] [index] [rule]   Insert [rule] to [chain] at [index] location.
-    -D [chain] [rule]           Delete [rule] from [chain].
-    -R [chain] [index] [rule]   Remove [rule] from [chain] at [index].
-    -F [chain]                  Flush all rules from [chain] / all chains.
-    -P [chain] [policy]         Define default Policy for the chain.
+---
 
-> To make changes persistent, use **iptables-save** command\
-> and redirect output to **/etc/sysconfig/iptables** & **/etc/sysconfig/ip6tables**.\
-> for ubuntu **/etc/iptables/rules.v4** & **/etc/iptables/rules.v6**.
+**`iptables `**`-t [table] [option] [chain] [match_condition] -j [policy]`\
+--> set up, maintain, and inspect the system's firewall rules.
 
+---> Option
+| **Option**| **Description**|
+| -         | - |
+| **-A**    | Append rule to chain|
+| **-I**    | Insert rule at top (or specific position) in chain<br>Important since rules are evaluated in order|
+| **-D**    | Delete a rule from chain|
+| **-R**    | Replace a rule in chain|
+| **-L**    | List rules in chain|
+| **-F**    | Flush all rules in chain|
+| **-P**    | Set default policy on chain|
+| **-S**    | Displays all rules in the form of iptables commands|
+
+---> Policy
+| **Action**    | **Description**|
+| -             | - |
+| **ACCEPT**    | Allow the packet|
+| **DROP**      | Silently discard the packet|
+| **REJECT**    | Discard the packet and send an error response|
+
+---> Match_Condition
+| **Match Option**                      | **Description**|
+| -                                     | - |
+| **-s**, **--source**                  | Source IP address or subnet.|
+| **-d**, **--destination**             | Destination IP address or subnet. |
+| **-p**, **--protocol**                | Protocol (e.g., TCP, UDP, ICMP). |
+| **-i**, **--in-interface**            | Packets entering on a specific interface. |
+| **-o**, **--out-interface**           | Packets leaving via a specific interface. |
+| **--sport**, **--source-port**        | Source port (TCP/UDP only). |
+| **--dport**, **--destination-port**   | Destination port (TCP/UDP only).|
+
+```
+    # Make changes permenent
+
+    sudo iptables-save > /etc/sysconfig/iptables       # RHEL-based
+    sudo ip6tables-save > /etc/sysconfig/ip6tables
+
+    sudo iptables-save > /etc/iptables/rules.v4        # Debian/Ubuntu
+    sudo ip6tables-save > /etc/iptables/rules.v6
+```
+
+---
 
 ### nftables
 
-nftables use the same same chain / table / policies /rules concepts as iptables, but the format is simplified.
+> **!** nftables use the same same chain / table / policies /rules concepts as iptables, but the format is simplified.
 
-`$ sudo nft list tables`
+`$ nft list tables`\
+--> list current tables.
 
-    table ip filter
-    table ip6 filter
-    table ip security
-    table ip6 security
-    table ip raw
-    table ip6 raw
-    ...
+`$ nft add table [family] [table]`\
+--> add a new table.
 
-`$ sudo nft add table ip Adam`
+`$ nft list table [family] [table]`\
+--> view a table.
 
-`$ sudo nft list table ip Adam`
+`$ nft 'add chain [family] [table] [chain] { type [type] hook [hook] priority [priority]; policy [policy]; }'`\
+--> add a chain.
 
-    table ip Adam {
-
-    }
-
-**Adding a new Chain**
-
-    $ nft 'add chain [ family ] [ table ] [ chain ] {
-        type [ type ] hook [ hook ] priority [ priority ] ; 
-        policy [ policy ] ; 
-        comment [ "comment" ] ; 
-        }'
-
-
-`$ sudo nft 'add chain ip Adam TestChain { type filter hook input priority 0 ; policy drop ; comment "for testing only" ; }'`
+`$ nft 'add rule [family] [table] [chain] [match] [action]'`\
+-- add a rule.
 
 > ! Notice the single quotes.
 
-`$ sudo nft list table ip Adam`
+`$ nft flush table [family] [table]`\
+--> flush rules from table.
 
-    table ip Adam {
+`$ nft delete chain [family] [table] [chain]`\
+--> delete chain from table.
 
-        type filter hook input priority filter ; policy drop ;  comment "for testing only" ;
+`$ nft delete table [family] [table]`\
+--> delete a table.
 
-    }
+---> family
+| **Family**| **Description**|
+| -         | - |
+| **ip**    | IPv4 traffic only|
+| **ip6**   | IPv6 traffic only|
+| **inet**  | Combined IPv4 and IPv6 (recommended for modern use)|
 
-**Adding a new Rule**
+---> type
+| **Type**  | **Description**|
+| -         | - |
+| **filter**| Used for packet filtering (accept/drop)|
+| **nat**   | Used for network address translation|
 
-    $ nft 'add rule [ family ] [ table ] [ chain ] [ matches ] [ statements ]'
+---> policy
+| **Policy**| **Description** |
+| -         | - |
+| **accept**| Accept packets if no rule matches|
+| **drop**  | Silently discard packets if no rule matches|
 
-`$ sudo nft 'add rule ip Adam TestChain tcp dport ssh accept'`
+---> hooks for filtering and nat
+| **Hook**          | **Description** |
+| -                 | - |
+| **prerouting**    | Before routing decisions are made(NAT)|
+| **input**         | For packets **destined** to the local machine |
+| **forward**       | For packets routed **through** the system |
+| **output**        | For packets **generated** by the local system(NAT) |
+| **postrouting**   | After routing, just before the packet leaves(NAT)|
 
-`$ sudo nft list table ip Adam`
-
-    table ip Adam {
-
-        type filter hook input priority filter ; policy drop ;  comment "for testing only" ;
-        tcp dport 22 accept
-
-    }
-
-Flush Rules from Table - `$ sudo nft flush table ip Adam`\
-Delete Chain from Table - `$ sudo nft delete chain ip Adam TestChain`\
-Delete Table - `$ sudo nft delete table ip Adam`
+---
 
 ### UFW
 
-> By default **ufw** service is disabled.
+***Config File* : /etc/default/ufw**
 
-`$ sudo ufw enable` 
+> **!** user-friendly command-line frontend for iptables (or nftables on newer systems), by default **ufw** service is disabled.
 
-> DO NOT use **systemctl** to enable **ufw** service or any other firewall service.
+**SYNTAX**
 
-    ufw enable      enable service ( startup )
-    ufw disable     disable service
-    ufw reset       disable and factory reset.
-    ufw reload      reload the firewall.
-    ufw status      display current status.
+| **Syntax**                                                                      | **Description**|
+| -                                                                             | - |
+| `ufw` **`[ enable / disable / reload / reset ]`**                             | Control UFW state: turn on, turn off, reload rules, or reset to defaults|
+| `ufw` **`[ RULE ]`**                                                          | Add a rule (e.g. allow, deny, reject, limit) to filter traffic|
+| `ufw` **`default [ allow / deny / reject ] [ incoming / outgoing / routed ]`**| Set default firewall behavior per traffic direction|
+| `ufw` **`logging [ on / off / LEVEL ]`**                                      | Enable or disable logging; set detail level (`low`, `medium`, `high`, `full`)|
+| `ufw` **`status [ verbose / numbered ]`**                                     | Show current firewall status and rules; optionally with details or numbers|
+| `ufw` **`delete [ NUMBER / RULE ]`**                                          | Remove a rule by its number or full rule syntax|
+| `ufw` **`insert [ NUMBER ] [ RULE ]`**                                        | Insert a rule at a specific position in the rule list|
+| `ufw` **`app [ list / info / default / update ]`**                            | List, View and Manage application profiles used for predefined rules|
 
-`$ sudo ufw status verbose`
+**RULE SYNTAX**
 
-- Status
-    * active
-    * disabled
+| **Rule Component**| **Description**                               | **Syntax**|
+| -                 | -                                             | - |
+| **Port**          | Specify a port number or range                | **22**  -  **80\tcp**  -  **88\udp**  -  **1000:2000**|
+| **Protocol**      | Specify protocol: TCP or UDP                  | **proto tcp**  -  **proto udp**|
+| **From**          | Source IP address or subnet                   | **from 192.168.1.0 -24**  -  **from any**|
+| **To**            | Destination IP address or subnet              | **to 10.0.0.5**  -  **to any**|
+| **Port (to)**     | Destination port                              | **to any port 80**  -  **to any port 443**|
+| **Direction**     | Specify traffic direction: inbound or outbound| **in**  -  **out**|
+| **Interface**     | Network interface                             | **on eth0**  -  **on wlan0**|
+| **Application**   | Application profile name                      | **"OpenSSH"**  -  **"Nginx Full"**|
+| **policy**        | Allowed policies                              | **allow**  -  **deny**  -  **reject**|
+| **comment**       | Optional, comments                            | **comment  "message"**|
 
-- Logging
-    * off
-    * low : blocked packets.
-    * medium : blocked / invalid / no-policy-match / new connection with rate limiting.
-    * high : all packets with rate limiting.
-    * full : all packets.
+• No need to **ufw reload** after rule changes.\
+• Rules are saved to **/etc/ufw/user.rules** and **/etc/ufw/user6.rules**.\
+• UFW uses **profiles** for common apps, stored in **/etc/ufw/applications.d/**.\
+• Do **not** modify default **profiles**; instead, create **/etc/ufw/applications.d/custom.d/**, add your profiles, and run `sudo ufw app update all`.
 
-- Default
-    * incomming / outgoing /routed policies.
-        + accept
-        + deny
-        + reject
+---
 
-- New Profiles
-    * ACCEPT **(Security Risk)**
-    * DROP
-    * REJECT
-    * SKIP
+`$ ufw status verbose`\
+--> display detailed status of UFW.
 
-Config - **/etc/default/ufw**.
+```
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), deny (routed)
+New profiles: skip
 
-    allow [ identifiers ]               set rule : allow packets from [ identifiers ].
-    deny [ identifiers ]                set rule : deny packets from [ identifiers ].
-    reject [ identifiers ]              set rule : reject packets from [ identifiers ].
-    delete [ rule / num ]               delete [ rule ] or rule by index [ num ].
-    insert [ num ] [ rule ]             insert [ rule ] at index [ num ].
-    logging [ level ]                   set logging level.
-    default [ policy ] [ direction ]    mod default [ direction ] [ policy ].
-                                        direction : incomming / outgoing / routed.
-                                        policy : allow / deny / reject.
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW IN    Anywhere                  
+80/tcp                     ALLOW IN    Anywhere                  
+443/tcp                    ALLOW IN    Anywhere                  
+22/tcp (v6)                ALLOW IN    Anywhere (v6)             
+80/tcp (v6)                ALLOW IN    Anywhere (v6)             
+443/tcp (v6)               ALLOW IN    Anywhere (v6)             
+```
 
-`$ sudo ufw allow 22/tcp`\
-< simple syntax : rule is applied to IPv4 and IPv6 >
+| **Category**      | **Option**| **Description**|
+| -                 | -         | - |
+| **Status**        | active    | UFW firewall is enabled and enforcing rules|
+|                   | disabled  | UFW firewall is turned off|
+| **Logging**       | off       | Logging is disabled|
+|                   | low       | Logs blocked packets only|
+|                   | medium    | Logs blocked, invalid, no-policy-match, new connections with rate limiting |
+|                   | high      | Logs all packets with rate limiting|
+|                   | full      | Logs all packets|
+| **Default**       | accept    | Default policy to accept packets (incoming/outgoing/routed)|
+|                   | deny      | Default policy to silently drop packets|
+|                   | reject    | Default policy to drop packets and send error response|
+| **New Profiles**  | ACCEPT    | Allow traffic (potential security risk)|
+|                   | DROP      | Silently discard traffic|
+|                   | REJECT    | Reject traffic and send error response|
+|                   | SKIP      | Skip the profile during processing|
 
-`$ sudo ufw deny from 192.168.0.0/24 to any port 80`
-< full syntax >
+---
 
-    from [ source ]         apply to traffic from ip / subnet / etc...
-    to [ destination ]      apply to traffic to ip / subnet / etc...
-    on [ interface ]        apply to traffic on [ interface ].
-    port [ port ]           apply to traffic on [ port ].
-    proto [ protocol ]      apply to [ protocol ].
-    out                     apply to all outgoing.
-    in                      apply to all incomming.
-    comment [ "message" ]   display [ "message" ] for rejected traffic.
+`$ ufw status numbered`\
+--> display numbered rules of UFW.
 
-> No need to **ufw reload** after rule changes.\
-> rules are added to **/etc/ufw/user.rules** and **user6.rules** files.
+```
+Status: active
 
-`$ sudo ufw status numbered`
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere                  
+[ 2] 80/tcp                     ALLOW IN    Anywhere                  
+[ 3] 443/tcp                    ALLOW IN    Anywhere                  
+[ 4] 22/tcp (v6)                ALLOW IN    Anywhere (v6)             
+[ 5] 80/tcp (v6)                ALLOW IN    Anywhere (v6)             
+[ 6] 443/tcp (v6)               ALLOW IN    Anywhere (v6)
+```
 
-    Status : active
+---
 
-    To              Action          From
-    -------         --------        --------
-    [1] 22/tcp      ALLOW IN        Anywhere
-    [2] 80          DENY IN         192.168.0.0/24
+`$ ufw app info OpenSSH`\
+--> view information about OpenSSH profile.
 
-`$ sudo ufw delete 2`
+```
+Profile: OpenSSH
+Title: OpenSSH Server
+Description: OpenSSH is a free version of the SSH connectivity tools that technical users of the Internet rely on.
 
-> UFW Uses **profiles** for common applications / daemons.\
-> these can be found at **/etc/ufw/applications.d/**.
+Ports:
+  22/tcp
+```
 
-`$ sudo ufw app list`
-
-    Available Applications:
-        CUPS
-        OpenSSH
-
-`$ sudo ufw app info OpenSSH`
-
-    profile: OpenSSH
-    ...
-
-> DO NOT modify **profiles**, instead create a new directory\
-> **/etc/ufw/applications.d/custom.d/**, add profiles\
-> and then `$ sudo ufw app update all`
+---
 
 ## IP PACKET FORWARDING
 
-enable packet forwading in kernal,
+kernel's ability to act as a router, forwarding IP packets between network interfaces when the destination of a packet is not the local system itself.
 
-`$ sudo sysctl -w net.ipv4.ip_forward=1`\
-`$ sudo sysctl -w net.ipv6.conf.all.forwarding=1`
+`$ sysctl -w net.ipv4.ip_forward=1` / `$ echo 1 > /proc/sys/net/ipv4/ipforward` --> Temporarily enable for IPv4.
 
-`$ cat /proc/sys/net/ipv4/ip_forward`
+`$ sysctl -w net.ipv6.conf.all.forwarding=1` / `$ echo 1 > /proc/sys/net/ipv6/conf/all/forwarding` --> Temporarily enable for IPv6.
 
-    1
+Add `net.ipv4.ip_forward=1` /  `net.ipv6.conf.all.forwarding=1` to `/etc/sysctl.conf` --> Permenantly enable.
 
-`$ cat /proc/sys/net/ipv6/conf/all/forwarding`
-
-    1
-
-> once Forwarding is eanbled, linux can now forward packets from\
-> one interface to another.
+---
 
 ## DYNAMIC RULE SETTING
 
-> **Intrusion Detection Systems** can monitor traffic for suspicious\
-> behavior and modify firewall rules accordingly.
+> **!** **Intrusion Detection Systems** can monitor traffic for suspicious behavior and modify firewall rules accordingly.
 
 ### DenyHosts
 
-- python script.
-- prevent brute-force attacks through OpenSSH.
-- script can be run as a cronjob or service.
-- monitors sshd log messages from **/var/log/auth.log** & **/var/log/secure**.
-- add IP to **/etc/hosts.deny** on repeated failed attempts (TCP Wrapper config file).
-- config **/etc/denyhosts.conf**
-- works only with IPv4 OpenSSH traffic. 
+- A Python-based security tool.
+- Designed to prevent **brute-force** attacks targeting **OpenSSH**.
+- Can run as a **cron job** or **background service**.
+- Monitors SSH authentication logs from **/var/log/auth.log** and **/var/log/secure**.
+- Automatically adds offending IP addresses to **/etc/hosts.deny** after multiple failed login attempts (uses TCP Wrappers).
+- Configurable via the **/etc/denyhosts.conf** file.
+- Supports **only IPv4** traffic for OpenSSH.
 
 ### Fail2Ban
 
-- monitors system logs
-- block IP / users on repeated login Fails.
-- works with TCP Wrapper / iptables /firewalld / etc...
-- **fail2ban-client** monitor both system and application logs.
-- **/etc/fail2ban/jail.conf** defines apps to monitor / where their log files are located / etc..
-- **fail2ban** is prone to **false positives**.
-- set release times to aliviete the **false positive** problem.
+* Monitors system and application logs for suspicious activity.
+* Automatically blocks IP addresses or users after **multiple failed login** attempts.
+* Can integrate with **TCP Wrappers**, **iptables**, **firewalld**, and other firewall tools.
+* The `fail2ban-client` utility is used to monitor and manage log-based bans.
+* Configuration is managed through **`/etc/fail2ban/jail.conf`**, which specifies the services to monitor, log file paths, and ban policies.
+* Susceptible to **false positives**, especially in high-traffic environments.
+* You can configure **ban release times** (unban timers) to reduce the impact of false positives.
 
 ### IPset
 
-- a named set of ip addresses / MACs / ports / interfaces / subnets.
-- easy to manage these groups through firewalls, etc...
+* Allows creation of named sets containing IP addresses, MAC addresses, ports, interfaces, or entire subnets.
+* Simplifies the management of these groups when integrating with firewalls (e.g., **iptables**, **nftables**) for filtering or access control.
 
-`$ ipset create MyTeam hash:net`\
-`$ ipset add MyTeam 192.168.1.12/24`
+`$ ipset create / n [set-name] [storage-method]:[set-type]`\
+--> create set.
 
-    create / n
+| Storage-Method : Set-Type | Description |
+| -                         | - |
+| **hash:ip**               | Stores individual IP addresses (IPv4 or IPv6)|
+| **hash:net**              | Stores IP subnets (ie. 192.168.0.0/24)|
+| **hash:mac**              | Stores MAC addresses|
+| **hash:ip,port**          | Stores IP address + port combinations|
+| **hash:net,port**         | Stores subnet + port pairs|
+| **hash:ip,port,ip**       | Stores source IP + port + destination IP triples|
+| **hash:ip,port,net**      | Stores source IP + port + destination subnet|
+| **bitmap:ip**             | Stores a contiguous range of IPv4 addresses (within a /16)|
+| **bitmap:port**           | Stores a range of ports (0–65535)|
+| **list:set**              | Stores other IP sets by name (nested sets)|
 
-        ipset create [ name ] [ storage method] : [ type ]
+`$ ipset add [ name ] [ ip / MAC / port / interface / subnet ]`\
+--> add entry to set.
 
-    add
+`$ ipset del [ name ] [ ip / MAC / port / interface /subnet ]`\
+--> delete an entry.
 
-        ipset add [ name ] [ ip / MAC / port / interface /subnet ]
-    
-    del
+`$ ipset destroy / x [ name ]`\
+--> destroy a set.
 
-        ipset del [ name ] [ ip / MAC / port / interface /subnet ]
-    
-    destroy / x
+`$ ipset list`\
+--> display the contents of sets.
 
-        ipset destroy MyTeam
+```
+Name: blacklist
+Type: hash:ip
+Revision: 4
+Header: family inet hashsize 1024 maxelem 65536
+Size in memory: 16592
+References: 1
+Number of entries: 2
+Members:
+192.168.1.100
+203.0.113.45
+```
 
-`$ ipset list`
-
-    Name : MyTeam
-    Type : hash:net
-    ...
-
-**Storage Methods**
-- bitmap
-- hash
-- list
-
-> IPset service file may not be availabe on systemd systems.
+> **!** There is no official or standard **ipset.service** file shipped with most distributions (systemd).\
+> **!** **ipset** is a command-line tool, **not** a **daemon**. it just modifies kernel data structures when **called**.
