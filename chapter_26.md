@@ -2,170 +2,163 @@
 
 ## BACKGROUND MODE
 
-- add a ( **&** ) to the end of the run command to run the script in background mode.
+Add ( **&** ) to the end of the run command to run the script in background mode.
+```
+$ ./test.sh &
+[1] 19943
+```
+**[ 1 ]** : shell assigned Job Number\
+**19943** : kernal assigned Process ID
+```
+$ [1]+ Done     ./test.sh
+```
+At the end of the process the above message will appear on the STDOUT.
 
-.
+---
 
-    $ ./test.sh &
-    [1] 19943
+**---> Multiple Jobs**
+```
+$ ./test.sh &
+[1] 19934
 
-- [1] : shell assigned Job Number
-- 19943 : kernal assigned Process ID
+test_loop_1
 
-.
+$ ./test2.sh &
+[2] 19952
 
-    $ [1]+ Done     ./test.sh
+test_loop_2
+test_loop_1
 
-- at the end of the process the above message will appear on the STDOUT.
-- running multiple jobs.
+$ ./test3.sh &
+[3] 19977
 
-.
+test_loop_3
+test_loop_1
+test_loop_2
+```
+- the output from previous jobs will appear **intermingled** with current outputs.
+- if the terminal **session ends**, all the **background** jobs **end** as well.
 
-    $ ./test.sh &
-    [1] 19934
+---
 
-    test_loop_1
+**---> Running Without a Console**
 
-    $ ./test2.sh &
-    [2] 19952
+`$ nohup ./test.sh &` ---> Send the **NOHUP** signal to ensure the process ignores **SIGHUP** signals from the terminal upon exit.
 
-    test_loop_2
-    test_loop_1
+The **nohup** command **disassociates** a process from the terminal, causing it to lose its output to the monitor.\
+Instead, the output is redirected to the **nohup.out** file in the **current directory**.
 
-    $ ./test3.sh &
-    [3] 19977
-
-    test_loop_3
-    test_loop_1
-    test_loop_2
-
-- the output from previous jobs will appear intermingled with current outputs.
-- if the terminal session ends, all the background jobs end as well.
-
-**Running without a Console**
-
-`$ nohup ./test.sh &`
-
-- send the **NOHUP** signal to the process.
-- then the **SIGHUP** signals sent by the terminal emulator when exiting will be ignored by the process.
-- the **nohup** command disassociates the process from terminal.
-- the process looses it's output to monitor.
-- the output will be instead redirected to **nohup.out** file in current directory.
+---
 
 ## SENDING SIGNALS
 
 ### INTERRUPTING A PROCESS
 
-- **Ctrl + C** sends a **SIGINT** signal (Interrupt).
-- **Ctrl + Z** sends a **SIGTSTP** signal (Pause).
+| **Shortcut Key**  | **Signal Sent**   | **Description**|
+| -                 | -                 | - |
+| `Ctrl + C`        | `SIGINT`          | Interrupts the process (terminate)|
+| `Ctrl + Z`        | `SIGTSTP`         | Suspends the process (pause)|
+| `Ctrl + \`        | `SIGQUIT`         | Quits the process and generates a core dump|
+| `Ctrl + D`        | *EOF*             | Signals end of input for a **command** or the **terminal** itself<br>In the log-in shell, will end the user session|
+| `bg`              | `SIGCONT`         | Resume process in background|
+| `fg`              | `SIGCONT`         | Resume process in foreground, hand-over the terminal|
+|                   |                   | - `$ bg %1` : resume the job numbered 1 in the background<br>- `$ fg %1` : resume job numbered 1 on the terminal|
 
-.
+**`ps au`** --> list all processes.
 
-    $ ./test.sh
-    [1]+ Stopped        test.sh
+**S** : sleeping\
+**T** : stopped\
+**R** : running\
+**+** : in the foreground process group
 
-    $ ps au
-    USER    PID    %CPU    ...    STAT    COMMAND
-    Adam    29213  0.0            S       -bash
-    Adam    29215  0.2            T       test.sh
-    Adam    29244  0.0            R       ps au
+```
+$ ./test.sh
+[1]+ Stopped        test.sh
 
-- **ps au** command list stopped processes as well.
-- S : sleeping / T : stopped / R : running.
-- enter the exit command two times to exit the terminal which has stopped jobs.
-- or kill the job using it's PID.
-- **Ctrl + D** send the EOF char to the input.
-- this will end the terminal.
-- if the shell is login shell, the user session will end.
+$ ps au
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+user      1532  0.0  0.0  18120  3040 pts/0    S    10:30   0:00 bash
+user      1589  0.3  0.1  73520  5600 pts/0    R+   10:32   0:00 top
+user      1601  0.0  0.0  42300  2100 pts/0    T    10:33   0:00 nano notes.txt
+user      1605  0.0  0.0  38420  1900 pts/0    S    10:34   0:00 sleep 1000
+```
+
+- **Foreground process group** is the set of processes **controlling** the terminal and **receiving** user input, usually created by **pipelines** or **job control**.
+
+- **"exit"** must be entered **2** times to exit a terminal that has stopped jobs.
+
+---
 
 ### JOB CONTROL
 
-- The **jobs** command allows fine control of current jobs.
+**`jobs`**`[option]`\
+--> list active jobs started in the **current** shell session.
 
-.
+```
+[1]-  Running                 sleep 300 &
+[2]+  Stopped                 nano notes.txt
+[3]   Running                 tail -f /var/log/syslog
+```
 
-    -l          List the PID along with job numbers.
-    -n          List jobs that changed their status since last notification from the shell.
-    -p          List only the PID's of the jobs.
-    -r          List only running jobs.
-    -s          List only stopped jobs.
+| **Symbol**    | **Meaning**|
+| -             | - |
+| **[ 1 ]**     | Job ID|
+| **+**         | Most recently used job<br>The default for `fg` & `bg`|
+| **-**         | Second most recent job|
+| **Stopped**   | Job is suspended (usually with `Ctrl + Z`)|
+| **Running**   | Job is running in the background (typically with `&` or `bg`)|
 
-multiple job control,
+| **Option**    | **Description**|
+| -             | - |
+| **-l**        | List job numbers **with their PIDs**|
+| **-n**        | List jobs whose status **has changed** since the last update|
+| **-p**        | List **only the PIDs** of the jobs|
+| **-r**        | Show **only running** jobs|
+| **-s**        | Show **only stopped** jobs|
 
-    $ sleep 1000
-    ^Z
-    [1]+  Stopped                 sleep 1000
-    $ sleep 1500
-    ^Z
-    [2]+  Stopped                 sleep 1500
-    $ sleep 2000
-    ^Z
-    [3]+  Stopped                 sleep 2000
-    $ jobs
-    [1]   Stopped                 sleep 1000
-    [2]-  Stopped                 sleep 1500
-    [3]+  Stopped                 sleep 2000
+---
 
-- the ( **+** ) sign indicate the current default job.
-- the ( **-** ) sign indicate the next in-line job.
-- us ethe **fg** (foreground) or **bg** (background) commands to resume jobs.
-- `$ bg 1` : resume the job in background.
-- `$ fg 1` : resume job on the terminal.
+## TIMERS
 
-.
+**`at `**`[option] [time]`\
+--> manage jobs for later execution.
 
-- timers can be set with,
-    + **at** command.
-    + **cron** command.
+| **Option**            | **Description**|
+| -                     | - |
+| **-q [ queue ]**      | Emails the user after the job completes for the specified queue. Requires a configured email address|
+| **-m**                | Emails the user after the job completes, even if there was no output. Requires a configured email address|
+| **-f [ file ]**       | Reads the job from the specified file instead of standard input|
+| **-l**                | Alias for `atq`; lists the user's pending jobs (all users if superuser)|
+| **-d**                | Alias for `atrm`; deletes scheduled jobs by job number|
+| **-c**                | Displays the contents of the specified job|
+| **-t [ time ]**       | Schedules a job for the specified time|
 
-**at**
+- **atd** monitors the queue for pending jobs every 60 seconds
+- **at** job files reside in **/var/spool/at/**
+- **26** virtual queues for different priority levels ( **a - z** )
 
-- **at** submits a job to a queue to be run ata certain time.
-- **atd** monitors the queue for pending jobs every 60 seconds.
-- **at** jobs reside in **/var/spool/at/**.
-- there are **26** queues for different priority levels ( **a-z** ).
+| **Category**  | **Formats**|
+| -             | - |
+| **Time**      | **HH:MM**<br>**HHMM**<br> **HH:MM{am/pm}**<br>**HHMM{am/pm}**<br>**midnight**<br>**noon**<br>**teatime**(16:00)|
+| **Date**      | **MMDD[CC]YY**<br>**MM/DD/[CC]YY**<br>**DD.MM.[CC]YY**<br>**[CC]YY-MM-DD**<br>**today**<br>**tomorrow**<br>**weekday**|
+| **Increment** | ( Time / Date ) + N (minutes / hours / days / weeks)|
 
-`$ at -f test.sh 18:56`\
-`$ echo ls | at noon`
+`$ at -f test.sh 18:56` ---> run **test.sh** at 18:56\
+`$ echo ls | at noon + 2 minutes` ---> run **ls** 2 minutes after noon
 
-    at [option] runtime
+---
 
-    -q [queue]      Emails the user after the job has been completed for the queue. Requires a configured email address.
-    -m	            Emails the user after the job has been completed, even if there was no output. Requires a configured email address.
-    -f [file]	    Reads the job from the specified [file] rather than from standard input.
-    -l	            An alias for "$ atq " command. Lists the user's pending jobs. If the user is superuser, it lists all users' pending jobs.
-    -d	            An alias for "$ atrm " command. Deletes the scheduled jobs, identified by their job number.
-    -c	            Cats the specified job, showing its contents in standard command-line output.
-    -t [time_arg]	Schedules a job for the time specified by the [time_arg] argument. The accepted time format is [[CC]YY]MMDDhhmm.
+**`crontab`**`[option]`\
+--> manage cron entries.
 
-    runtime Formats,
+| **Option**| **Description**|
+| -         | - |
+| `-e`      | Edit the current user’s crontab file|
+| `-l`      | List the current user’s cron jobs|
+| `-r`      | Remove the current user’s crontab|
+| `-u user` | Specify the user whose crontab you want to manage (requires root)|
 
-    Time:
-        HH:MM
-        HHMM
-        12-hour format (am or pm)
-        midnight
-        noon
-        teatime ( 16:00 )
-
-    Date:
-        MMDD[CC]YY
-        MM/DD/[CC]YY
-        DD.MM.[CC]YY
-        [CC]YY-MM-DD
-        today
-        tomorrow
-        weekday
-
-    Increment:
-        priviously listed unit + count time-units
-        
-        ( where the time-units can be minutes, hours, days or weeks )
-
-**cron**
-
-to schedule a re-occuring task
-
+```
     Example of job definition:
     .---------------- minute (0 - 59)
     |  .------------- hour (0 - 23)
@@ -174,31 +167,19 @@ to schedule a re-occuring task
     |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
     |  |  |  |  |
     *  *  *  *  * user-name  command to be executed
+```
 
-- all users can have their own cron table.
-- `$ crontab -l` : list availabe cron tables.
-- `$ crontab -e` : create / edit cron table.
 - vi editor will open to edit the entries.
-- use wildcard * to specify every loop of that unit (ie. day)
+- use wildcard * to specify every looping unit (ie. day)
 - `00 12 * * *` : at noon everyday.
 - `00 12 * * 1` : at noon every monday.
 
-**systemd timers**
+---
 
-- systemd startup system can automatically launch programs with delayed timers.
-- a timer unit file ( **.timer** ) can specify when a program starts.
-- add a [ timer ] section to the file.
+**Systemd Timers**
 
-Some commenly used timer directives,
+- The **systemd** startup system can automatically launch programs using delayed timers.
+- A **timer unit file** (`.timer`) specifies when a program should start.
+- To configure this, add a `[Timer]` section to the timer unit file.
 
-    AccuracySec             specify accuracy of the timer.
-    OnActiveSec             timer relative to moment the timer is acivated.
-    OnBootSec               timer relative to system boot.
-    OnCalender              timer as specific date/time.
-    OnStartupSec            timer relative to when the systemd initiated.
-    OnUnitActiveSec         timer relative to last time the unit activated.
-    OnUnitInactiveSec       timer relative to last time the unit deactivated.
-    Persistent              store last trigger time on disk.
-    RandomizedDelaySec      random delay
-    Unit                    unit file to start when timer elapse.
-    WakeSystem              resume system on trigger.
+( see chapter 6)
