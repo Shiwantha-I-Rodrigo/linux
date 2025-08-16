@@ -28,7 +28,7 @@
 
 | Permission        | File                                              | Directory|
 | -                 | -                                                 | - |
-| **x** (execute)   | execute (**run**) the file as a script or program | enter or traverse the directory (**cd**)|
+| **x** (execute)   | execute (**run**) the file as a script or program | enter or traverse the directory (**cd**)<br>This attribute must be set for **ALL PARENT DIR's** as well|
 | **r** (read)      | read file contents (**cat**)                      | list contents (**ls**)|
 | **w** (write)     | edit or modify the file (**vim**)                 | create, delete, or rename files inside(**touch**)|
 

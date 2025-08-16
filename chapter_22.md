@@ -2,186 +2,321 @@
 
 ## ACCOUNT ACCESS
 
-### LOCAL
+### LOCAL ACCOUNTS
 
-- local accounts : using directly connected to interfaces to the system.
-- consider,
-    + is this a newly created account ?
-    + what is the username being entered ?
-    + has the user ever logged in ?
-    + is the user using terminal or GUI ?
+**Local accounts** refer to user profiles that authenticate through interfaces directly connected to the system (ie. console or local terminal access)
 
+**Consider the following when troubleshooting :**
 
-**password**
+* Was the account recently created?
+* What exact username is being entered during login?
+* Has the user successfully logged in before?
+* Is the user attempting to log in via the terminal or through the graphical user interface (GUI)?
 
-`$ sudo getent passwd Adam`\
-`$ sudo getent shadow Adam`
+> **!** everything is case sensitive in linux.
 
-> everything is case sensitive in linux.
+---
 
-**account access**
+**PASSWORD**
 
-`$ sudo lastlog -u Adam`\
-< search through **/var/log/lastlog** for the last time user logged in >
+`$ getent passwd Adam`
+```
+Adam:x:1001:1001:Adam Smith:/home/Adam:/bin/bash
+```
+`$ getent shadow Adam`
+```
+Adam:$6$abcd1234$xyz.....:19345:0:99999:7:::
+```
+---
 
-`$ sudo last -f /var/log/wtmp -f /var/log/wtmp.* | grep Adam`\
-< search through **/var/log/wtmp** files for past user logins >
+**ACCOUNT ACCESS**
 
-`$ sudo lastb -f /var/log/btmp -f /var/log/btmp.* | grep Adam`\
-< search through **/var/log/btmp** files for login user fails >
+`$ lastlog -u Adam`\
+--> search through **/var/log/lastlog** for the last time user logged in.
+```
+Username         Port     From             Latest
+Adam             pts/0    192.168.1.100     Mon Aug 12 14:22:01 +0000 2025
+```
+```
+Username         Port     From             Latest
+Adam                                      **Never logged in**
+```
 
-**privilege elavation**
+`$ last -f /var/log/wtmp -f /var/log/wtmp.* | grep Adam`\
+--> search through **/var/log/wtmp** files for past user logins.
+```
+Adam    pts/0        192.168.1.100    Mon Aug 12 14:22 - 14:45  (00:23)
+Adam    tty1                         Sat Aug 10 08:00 - 08:20  (00:20)
+```
 
-`$ EDITOR=vim visudo`
-< pruce through **/etc/sudoers** file for any mention of user or user groups >
+`$ lastb -f /var/log/btmp -f /var/log/btmp.* | grep Adam`\
+--> search through **/var/log/btmp** files for login user fails.
+```
+Adam     tty1                          Mon Aug 12 14:55 - 14:55  (00:00)
+Adam     pts/1     192.168.1.100       Sun Aug 11 09:12 - 09:12  (00:00)
+```
 
-%admin ALL=(ALL) ALL
-< members of **admin** group can gain root priviledges >
+---
 
-%sudo ALL=(ALL:ALL) ALL
-< members of **sudo** group can execute any command >
+**PRIVILEDGE ESACALTION**
 
-`$ id Adam`
-< list user info, inc. user groups >
+`$ EDITOR=vim visudo`\
+--> pruce through **/etc/sudoers** file for any mention of user or user groups.
 
-**GUI issues**
+```
+# User alias specification (optional)
+User_Alias ADMINS = alice, bob
 
-> if the user can successfully log in with the terminal, investigate for GUI issues.
+# Group alias specification (optional)
+# (Defines a group of groups or users)
+# Group_Alias SYSOPS = admin, sysadmin
 
-`$ sudo systemctl status graphical.target`\
-< check if graphical.target is active >
+# Allow root to do anything
+root    ALL=(ALL:ALL) ALL
+
+# Allow members of group sudo to run any command as any user or group
+%sudo   ALL=(ALL:ALL) ALL
+
+# Allow members of group admin to run any command as any user (default group)
+%admin  ALL=(ALL) ALL
+
+# Allow specific users in ADMINS alias to run commands without password prompt
+ADMINS  ALL=(ALL) NOPASSWD: ALL
+
+# Allow user charlie to run a specific command without password
+charlie ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart apache2
+
+# Allow user dave to run only shutdown and reboot commands
+dave    ALL=(ALL) /sbin/shutdown, /sbin/reboot
+
+# Defaults to improve security and logging
+Defaults        env_reset
+Defaults        mail_badpass
+Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+# End of file
+```
+
+`$ id Adam`\
+--> list user info, inc. user groups.
+```
+uid=1001(Adam) gid=1001(Adam) groups=1001(Adam),27(sudo),1002(developers)
+```
+
+---
+
+**GUI ISSUES**
+
+> **!** if the user can successfully log in with the terminal, investigate for GUI issues.
+
+`$ systemctl status graphical.target`\
+--> check if graphical.target is active.
+
+```● graphical.target - Graphical Interface
+   Loaded: loaded (/usr/lib/systemd/system/graphical.target; enabled; vendor preset: enabled)
+   Active: active since Thu 2025-08-14 08:30:22 UTC; 2h 15min ago
+     Docs: man:systemd.special(7)
+           https://www.freedesktop.org/wiki/Software/systemd/TheTargets/
+  Drop-In: /etc/systemd/system/graphical.target.wants/
+           └─gdm.service
+  CGroup: /system.slice/graphical.target
+          ├─gdm.service
+          │ ├─1234 /usr/sbin/gdm
+          │ └─1256 /usr/libexec/gdm-session-worker
+          └─other graphical services...
+
+Aug 14 08:30:22 hostname systemd[1]: Reached target Graphical Interface.
+Aug 14 08:30:22 hostname systemd[1]: Started GDM Display Manager.
+```
 
 `$ sudo systemctl status multi-user.target`\
-< in case of multiple users in the same system, check if multi-user.target is active >
+--> in case of multiple users in the same system, check if multi-user.target is active.
 
-**terminal issues**
+---
 
-> if the user can log into **text-based terminal** but not into a **virtual terminal** or  a **graphical desktop**. 
+**TERMINAL ISSUES**
+
+> **!** if the user can log into **text-based terminal** but not into a **virtual terminal** or  a **graphical desktop**.
 
 `$ ls -l /dev/tty?`
 
-    crw--w---- 1 root tty 4, 0 Jan 4 09:38 /dev/tty0
-    ...
+```
+crw-rw-rw- 1 root tty 5, 0 Aug 14 10:15 /dev/tty0
+-rw--w---- 1 root tty 4, 0 Aug 14 10:15 /dev/tty1
+crw--w---- 1 root tty 4, 1 Aug 14 10:15 /dev/tty2
+crw--w---- 1 root tty 4, 2 Aug 14 10:15 /dev/tty3
+crw--w---- 1 root tty 4, 3 Aug 14 10:15 /dev/tty4
+crw--w---- 1 root tty 4, 4 Aug 14 10:15 /dev/tty5
+crw--w---- 1 root tty 4, 5 Aug 14 10:15 /dev/tty6
+crw--w---- 1 root tty 4, 6 Aug 14 10:15 /dev/tty7
+crw--w---- 1 root tty 4, 7 Aug 14 10:15 /dev/tty8
+crw--w---- 1 root tty 4, 8 Aug 14 10:15 /dev/tty9
+```
 
-if the starting char is a (**-**) instead of the **c** in the record, the file is corrupted.\
-if the file is corrupted use **mknod** to rebuild it.
+if the starting char is a ( **-** : Regular File ) instead of the ( **c** : Character File ) in the record, the file is **corrupted**.
 
-> if the user can't login to another text-based terminal.
+`$ mknod /dev/tty1 c 4 1`\
+--> rebuild the corrupted device file.
 
-`$ sudo systemctl status getty.target`\
-< check if getty services are active >
+> **!** if the user can't even login with another text-based terminal.
 
-> check **/etc/security/access.conf** for any blocks.
+`$ systemctl status getty.target`\
+--> check if getty services are **active**
 
-**additional isuues**
+> **!** **getty.target** is a systemd target used to group all getty@.service units, It represents the login terminals.
 
-> is the account locked.
+```
+● getty.target - Login Prompts
+   Loaded: loaded (/usr/lib/systemd/system/getty.target; static)
+   Active: active since Thu 2025-08-14 08:30:22 UTC; 2h 25min ago
+     Docs: man:systemd.special(7)
 
-`$ sudo passwd -S Adam`
+Aug 14 08:30:22 hostname systemd[1]: Reached target Login Prompts.
+```
 
-    Adam L 01/02/2019 0 99999 7 -1
+`grep -E '^\s*-[^\#]*\bAdam\b' /etc/security/access.conf`\
+--> check **/etc/security/access.conf** for any blocks.
 
-`$ sudo getent shadow Adam`
+```
+-:Adam:ALL
+-:ALL EXCEPT Adam:tty1
+```
+1. Adam is completely denied login access to the system.
+2. Every user except Adam is denied access to tty1
 
-    Adam:!$6$...:17652:0:999999:7:::
+> **!** Rules in **/etc/security/access.conf** are evaluated **top to bottom**, and the **first match wins**.
 
-> the **L** in passwd outpout indicates a **Locked account** or an **account with no password**.\
-> the **!** in front of the **password hash** indicate that the account is actually locked.
+---
 
-`# usermod -U Adam` / `# passwd -u Adam`\
-< unlock user Adam >
+**LOCKED ACCOUNT**
 
-> is the account or password has expired
+`$ sudo passwd -S Adam`\
+--> Shows the **password status** of a local user, using **/etc/shadow**.
+```
+Adam L 01/02/2019 0 99999 7 -1
+```
+`$ sudo getent shadow Adam`\
+--> retrieves password and account aging information.
+```
+Adam:!$6$...:17652:0:999999:7:::
+```
 
-`$ sudo chage -l Adam`
+> **!** the **( L )** in passwd outpout indicates a **Locked account** or an **account with no password**.\
+> **!** the **( ! )** in front of the **password hash** indicate that the account is actually locked.
 
-    ...
-    Account expires     : jan 01 2022
-    ...
-    password expire     : dec 25 2021
-    ...
+`$ usermod -U Adam`\
+`$ passwd -u Adam`\
+--> unlock the user
 
-### REMOTE
+---
 
-- check connectivity to system.
-- check firewall rules.
-- is the OpenSSH server running.
-- check sshd_config file. ( **AllowUsers / AllowGroups / PasswordAuthentication** )
-- check **~/.ssh/config**.
-- check **/etc/ssh/ssh_config**.
-- if the X11 GUI is transfered over the network, is the **ForwardX11** directive set.
-- Authentication Issues
-    + check **PAM** configs.
-    + use **pam_tally2** and **faillock** to check if the user account is locked.
-    + check external authentication issues ( **kerberos / LDAP** ).
-    + check linux security modules ( **SELinux / AppArmor** ).
-    + check security policy violations at **audit.log** or **messages.log**.
-        * AppArmor : `$ ausearch -m avc`.
-        * SELinux : `$ sealert -a /var/log/audit/audit.log`.
-    + check **/var/log/auth.log** or **/var/log/secure**.
+**EXPIRED ACCOUNT or PASSWORD**
+
+`$ chage -l Adam`\
+--> list users password aging information.
+```
+Last password change                                    : Aug 01, 2025
+Password expires                                        : Never
+Password inactive                                       : Never
+Account expires                                         : Never
+Minimum number of days between password change          : 0
+Maximum number of days between password change          : 99999
+Number of days of warning before password expires       : 7
+```
+
+---
+
+### REMOTE ACCOUNTS
+
+**1. Basic Connectivity Checks**
+
+* Verify that the system is reachable over the network (ie. using `ping`, `telnet`, or `ssh`).
+* Ensure that no firewall rules (local or network) are blocking access to the SSH port (default: 22).
+
+**2. SSH Service Validation**
+
+* Confirm that the **OpenSSH server** (`sshd`) is running on the remote system.
+* Review the SSH daemon configuration (`/etc/ssh/sshd_config`) for:
+    + `AllowUsers` or `AllowGroups` restrictions
+    + `PasswordAuthentication` setting (whether password logins are allowed)
+
+**3. SSH Client Configurations**
+
+* Check the user's personal SSH client configuration in `~/.ssh/config`.
+* Review the system-wide SSH client configuration in `/etc/ssh/ssh_config`.
+
+**4. GUI Over SSH (X11 Forwarding)**
+
+* If X11 applications are expected to run over SSH, ensure the `ForwardX11` option is enabled in the SSH client configuration.
+
+**5. Authentication Troubleshooting**
+
+* **PAM (Pluggable Authentication Modules):**
+
+  * Review PAM configuration files (ie. `/etc/pam.d/`) for any restrictive rules.
+
+* **Account Lockout:**
+
+  * Use tools like `pam_tally2` or `faillock` to check if the user account is locked due to failed login attempts.
+
+* **External Authentication Systems:**
+
+  * Verify if there are issues with integrated services such as **Kerberos** or **LDAP**.
+
+* **Security Modules:**
+
+  * Confirm whether **SELinux** or **AppArmor** are blocking user actions. `ausearch -m avc` / `sealert -a /var/log/audit/audit.log`
+
+* **Log Analysis:**
+
+  * Check for authentication errors in:
+
+    * `/var/log/auth.log` (Debian-based systems)
+    * `/var/log/secure` (Red Hat-based systems)
+
+---
 
 ## FILE PERMISSIONS
 
-- use `$ ls -l` to view file / directory permissions.
-- use `$ id Adam` to view user groups.
+`$ ls -l`\
+--> to view file / directory permissions.
 
-**Directory Permissions**
+> **!** check user groups - `$ id Adam`.
 
-- r : Allow user to view dir content.
-- w : Allow user to create, move (rename), modify attributes and delete files.
-- x : Allow user to change their working directory to this dir.
-    + **given this attribute is set for ALL PARENT DIR's as well**.
+**ADVANCED PERMISSIONS**
 
-> the sticky bit help prevent users deleting others files in shared directories.
+| **Feature & Purpose**                                                     | **Command(s)**                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ACL (Access Control Lists):** View and modify extended file permissions | - View ACLs: <br>`getfacl file1`<br>- Set ACLs: <br>`setfacl -m u:username:rwx file1`<br>- Remove ACLs: <br>`setfacl -x u:username file1`                                                                                                                                 |
+| **SELinux:** Manage Mandatory Access Control (MAC) policies               | - Check if enabled: <br>`sestatus`<br>- View file context: <br>`ls -Z file1`<br>- Change file context: <br>`chcon -t httpd_sys_content_t file1`<br>- List boolean policies: <br>`getsebool -a`<br>- Enable/disable a boolean: <br>`setsebool -P httpd_can_network_connect on` |
+| **AppArmor:** Apply program-level access control profiles                 | - Check AppArmor status: <br>`aa-status`<br>- Enforce a profile: <br>`aa-enforce /etc/apparmor.d/usr.sbin.nginx`<br>- Set profile to complain mode: <br>`aa-complain /etc/apparmor.d/usr.sbin.nginx`<br>- Disable a profile: <br>`aa-disable /etc/apparmor.d/usr.sbin.nginx`          |
 
+---
 
-**Advanced Permissions**
-
-- ACL
-    + use `$ getfacl file1.txt` command to view ACL permissions for files.
-    + use `$ setfacl` to change permissions.
-- SELinux
-    + check if SELinux is active `$ sestatus`.
-    + check context permissions `$ ls -Z file1.txt`.
-    + use `$ chcon` to change context.
-    + use `$ getsebool` to list policies.
-    + use `$ setsebool` to activate / deactivate policies.
-- AppArmor
-    + check if AppArmor is running `$ aa-status`.
-    + use `aa-enforce` / `aa-complain` / `aa-disable` to change profile settings.
-
-**File Creation**
+**FILE CREATION**
 
 if a user is denied creating a file,
 
-- are Quotas enforced ?
-    + check **/etc/fstab** for **usrquota** or **grpquota**.
-    + check users / groups quota status with `$ quota` utility.
-    + use `$ quotaoff` to diasable quotas.
+| **Check**                                | **Command(s)** / Notes                                                                                                                                                              |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Are quotas enforced?**                 | - Check `/etc/fstab` for `usrquota` / `grpquota` <br> - View quotas: `quota` <br> - Disable quotas: `quotaoff`                                                                       |
+| **Has the disk run out of space?**       | - View disk usage: `df -h`                                                                                                                                                          |
+| **Has the partition run out of inodes?** | - View inode usage: `df -i` <br> - Find dirs with many small files <br> - Delete unnecessary files <br> - Inodes fixed at filesystem creation <br> - Set custom inodes: `mke2fs -i` |
+| **User umask settings**                  | - View umask: `umask`                                                                                                                                                               |
 
-- has the disk run out of space ?
-    + use `$ df` to view disk usage.
+> **!** if the file cannot be deleted check its immutable attribute with `$ lsattr file1`.\
+> **!** if the immutable bit ( i ) is set change it with `$ chattr -i file1`.
 
-- has the partition run out of inodes.
-    + very unusual.
-    + use `$df -i` to view inode usage.
-    + check for directories with large amount of tiny files.
-    + remove unnessasary files.
-    + inode number cannot be changed after file system creation.
-    + set custom inode numbers at file system creation `mke2fs -i`.
+> **!** check security module file permission policies ( SELinux / AppArmor ).
 
-- user mask settings.
-    + use `$ umask` to view users mask settings.
-
-> if the file cannot be deleted check its immutable attribute with `$ lsattr file1.txt`.\
-> if the immutable bit ( i ) is set change it with `$ chattr -i file1.txt`.
-
-- check security module file permission policies ( SELinux / AppArmor ).
-    + check security policy violations at **audit.log** or **messages.log**.
+---
 
 ## SHELL ISSUES
 
-- use `$ getent passwd Adam` to check default shell.
+Check default shell ---> `$ getent passwd Adam`
+```
+Adam:x:1001:1001:Adam Smith:/home/Adam:/bin/bash
+```
 
 - if user cannot login check if default shell is **/sbin/nologin** or **/sbin/false**.
 
@@ -189,17 +324,16 @@ if a user is denied creating a file,
 
 - check global environment variables as well `$ printenv`.
 
-- sub shells may not inherit environmental variables, **EXPORT** such variables.
+- Subshells do not automatically inherit shell variables, so `export` must be used to promote the variable to an environment variable.
 
-.
-
-    $ EDITOR='vim'      < set variable >
-    $ echo $EDITOR      < get variable >
-    vim                 < returns corectly >
-    $ bash              < initiate sub shell >
-    $ echo $EDITOR      < get variable >
-    $                   < return empty >
-
-.
-
-    $ export EDITOR='vim'       < set session presistent variable >
+```
+$ EDITOR='vim'
+$ echo $EDITOR
+vim
+$ bash              # initiate sub shell
+$ echo $EDITOR 
+$
+```
+```
+$ export EDITOR='vim'       # set environment variable
+```

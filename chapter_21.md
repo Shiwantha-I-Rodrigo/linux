@@ -2,175 +2,173 @@
 
 ## MONITOR PROCESSES
 
-- when linux bootup it runs the **init** process.
-- all other processes are initiated by the **init** process, using scripts.
+> **!** At boot, Linux starts the **init** process (PID 0), from which all other processes originate.
 
-### ps
+---
 
-    $ ps
-    PID     TTY     TIME        CMD
-    2323    pts/0   00:00:00    bash
-    2876    pts/0   00:00:00    ps
+**`ps `**`[option]`\
+--> displays information about active (running) processes.
 
-- currently the ps command supports,
-    + Unix-style parameters (-).
-    + BSD-style parameters.
-    + GNU parameters (--).
+The `ps` command supports three types of parameters :
 
-`$ ps -ef`\
-< every process from every user >
+* Unix-style options (with a `-` prefix)
+* BSD-style options (without a prefix)
+* GNU-style long options (with a `--` prefix)
+```
+$ ps
+PID TTY          TIME CMD
+2345 pts/1    00:00:12 bash
+7890 pts/1    00:00:00 ps
+```
+```
+$ ps aux
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.1 169580  5380 ?        Ss   08:30   0:01 /sbin/init
+alice     2345  2.3  1.5 275432 31000 pts/1    Rl   09:10   0:12 /usr/bin/python3 myscript.py
+bob       7890  0.1  0.2  98040  4100 pts/2    S    09:15   0:00 bash
+root      4321  0.0  0.0      0     0 ?        Z    09:20   0:00 [kworker/0:1]
+```
+```
+$ ps -ef
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 08:30 ?        00:00:01 /sbin/init
+alice     2345  1234  2 09:10 pts/1    00:00:12 /usr/bin/python3 myscript.py
+bob       7890  2345  0 09:15 pts/2    00:00:00 bash
+root      4321     1  0 09:20 ?        00:00:00 [kworker/0:1]
+```
 
-- UID : user ID
-- PID : process ID
-- PPID : parent process ID
-- C : CPU usage over life time of the process.
-- STIME : system time when process started.
-- TTY : initial terminal.
-- TIME : cumulative CPU time.
-- CMD : name of the program.
-    + if the name is in brackets, the process has been swapped into virtual memory.
-    + when a relevent event triggers, a signal is sent to the sleeping process.
-    + if it is in interruptible sleep mode, it will wake up.
-    + if it is in uninterruptible sleep mode, it will wait for an external event.
-        * such as hardware becomming availabe.
-        * it will save signals while sleeping and act on them when woken up.
+| Column    | Description|
+| -         | - |
+| **UID**   | User ID|
+| **PID**   | Process ID|
+| **PPID**  | Parent Process ID|
+| **C**     | CPU usage over the lifetime of the process|
+| **STIME** | System time when the process started|
+| **TTY**   | Associated terminal|
+| **TIME**  | Cumulative CPU time used|
+| **CMD**   | Name of the program|
+|           | If the name is in brackets, the process has been swapped out to virtual memory (**sleeping**)|
+|           | When an event occurs, a signal is sent to the **sleeping** process :<br>- In **interruptible sleep**, it wakes up<br>- In **uninterruptible sleep**, it waits for an external event (ie. hardware), signals are queued until it resumes|
 
-> if a process has ended but the parent process hasn't acknowledged it,\
-> the process is stuck between running and terminating, untill acknowledged.
-> **Zombie**.
+> **!** If a process ends but its parent hasn’t acknowledged it, it becomes a **zombie** — stuck between running and termination.
 
-### top
+---
 
-- first line
-    + current time.
-    + up time.
-    + no. of logged in users.
-    + load average ( 1min, 5min, 15 min).
+**`top `**`[option]`\
+--> monitor real-time system processes and resource usage.
 
-- second line
-    + no. of processes.
-    + running.
-    + sleeping.
-    + stopped.
-    + zombie.
+```
+top - 10:45:32 up 3 days,  2:17,  2 users,  load average: 0.42, 0.36, 0.25
+Tasks: 145 total,   1 running, 142 sleeping,   1 stopped,   1 zombie
+%Cpu(s):  5.3 us,  1.2 sy,  0.0 ni, 92.8 id,  0.5 wa,  0.0 hi,  0.2 si,  0.0 st
+MiB Mem :   7859.3 total,   1023.5 free,   3941.0 used,   2894.8 buff/cache
+MiB Swap:   2048.0 total,   2048.0 free,      0.0 used.   3555.0 avail Mem 
 
-- cpu info (time spent for)
-    + us : user applications.
-    + sy : system resources.
-    + ni : low priority processes.
-    + id : idling.
-    + wa : waiting for disk or network.
-    + hi : processing hardware interrupts.
-    + si : processing software interrupts.
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND     
+ 2345 alice     20   0  275432  31000   5032 R   3.0  0.4   0:12.34 python3      
+ 1243 root      20   0  161200   4500   3100 S   0.3  0.1   0:00.98 sshd         
+ 7890 bob       20   0   98040   4100   3200 S   0.0  0.1   0:00.02 bash         
+    1 root      20   0  169580   5380   3200 S   0.0  0.1   0:01.45 systemd
+```
 
-- physical memory stats.
+---> top information
 
-- swap memory stats.
+| Line                  | Information|
+| -                     | - |
+| 1                     | - Current time<br>- uptime<br>- number of logged in users<br>- load average (1min, 5min, 15min)|
+| 2                     | - Number of processes<br>- running<br>- sleeping<br>- stopped<br>- zombie|
+| cpu time info         | - **us** : user applications<br>- **sy** : system resources<br>- **ni** : low priority processes<br>- **id** : idling processes<br>- **wa** : waiting for disk or network<br>- **hi** : processing hardware interrupts<br>- **si** : processing software interrupts<br>- **st** : steal time|
+| physial memory stats  | - total<br>- free<br>- used<br>- cache|
+| swap memory stats     | - total<br>- free<br>- used<br>- availabe|
+| process information   | - **PID** : process id<br>- **USER** : user name<br>- **PR** : priority<br>- **NI** : nice value<br>- **VIRT** : virtual mem. used<br>- **RES** : physical mem. used<br>- **SHR** : shared memory usage<br>- **S** : process status<br>- **%CPU** : CPU usage<br>- **%MEM** : memory usage<br>- **TIME+** : total CPU time<br>- **COMMAND** : program name|
+|                       | **Process Status**<br> D : inturruptible sleep<br> R : running<br> S : sleeping<br> T : traced / stopped<br> Z : zombie|
 
-- process information
-    + PID : process id.
-    + USER : name.
-    + PR : priority.
-    + NI : nice value of the process.
-    + VIRT : amount of virtual mem. used.
-    + RES : amount of physical mem. used.
-    + SHR : shared memory usage.
-    + S : process status.
-        * D - inturruptible sleep.
-        * R - running.
-        * S - sleeping.
-        * T - traced or stopped.
-        * Z - zombie.
-    + %CPU : cpu usage %.
-    + %MEM : mem. usage %.
-    + TIME+ : total CPU time used.
-    + COMMAND : program name.
+---> top interactive actions
 
-.
-
-    < top > interactive commands.
-
-    1       toggle single cpu / multi processor state.
-    b       toggle bolding important info.
-    l       toggle load average line.
-    t       toggle cpu info line.
-    m       toggle mem info lines.
-    f       add remove different columns.
-    o       change order of columns.
-    F / O   select sort column ( default %CPU).
-    < / >   move sort column.
-    R       toggle reverse order.
-    h       toggle showing threads.
-    c       toggle command name / full command line.
-    i       toggle idle processes.
-    S       toggle cum. cpu time / relative cpu time.
-    x       toggle highlighting sort column.
-    y       toggle highlighting running processes.
-    u       show processes for specific user.
-    n / #   set no. of processes to display.
-    k       kill a process.
-    r       change process priority.
-    d / s   change update interval.
-    W       writes current settings to file.
-    q       quit.
+| **Key**       | **Action**|
+| -             | - |
+| **1**         | Toggle between single CPU and multi-processor view |
+| **b**         | Toggle bold text for important information|
+| **l**         | Show or hide the load average line|
+| **t**         | Show or hide CPU usage line|
+| **m**         | Show or hide memory usage lines|
+| **f**         | Add or remove columns in the display|
+| **o**         | Change the order of displayed columns|
+| **F** / **O** | Choose which column to sort by (default is **%CPU**) |
+| **<** / **>** | Move the sort column left or right|
+| **R**         | Toggle sorting in reverse order|
+| **h**         | Toggle display of threads|
+| **c**         | Toggle between command name and full command line  |
+| **i**         | Show or hide idle processes|
+| **S**         | Toggle between cumulative and relative CPU time    |
+| **x**         | Highlight the current sort column|
+| **y**         | Highlight running processes|
+| **u**         | Show processes for a specific user|
+| **n** / **#** | Set the number of processes to display|
+| **k**         | Kill a selected process|
+| **r**         | Change the priority (nice value) of a process|
+| **d** / **s** | Change the screen update interval|
+| **W**         | Save the current configuration to a file|
+| **q**         | Quit the `top` program|
 
 > **htop** is the improved version of **top**
 
+---
 
 ## MANAGE PROCESSES
 
 ### SETTING PRIORITIES
 
-#### nice / renice
+**nice / renice**
 
 `$ nice -n 10 ./myscript.sh`\
-< change priority for a new process >
+--> change priority for a **new** process.
 
 `$ renice 13 -p 3145`\
-< change priority for a running process >
+--> change priority for a **running** process.
 
-- the linux kernal decide whether to accept the nice / renice change, depending on the situation.
-- if the system is loaded it may ignore the nice / renice commands.
-- nice value can be from **-20** to **19**.
-- only the **root** can decrese the nice value of a running process or set values less than 0.
+* The Linux kernel determines whether to apply `nice` or `renice` adjustments based on current system conditions.
+* If the system is under heavy load, it may ignore requests to change process priorities using `nice` or `renice`.
+* Nice values range from **-20** (highest priority) to **19** (lowest priority).
+* Only the **root** user can lower a process's nice value below **0**.
+
+---
 
 ### STOPPING PROCESSES
 
-- incase the process is hung up or running away it must be controled.
-- linux processes communicate using **process signals**.
-- a process may recive a signal and choose to act on it or neglect it.
+* If a process becomes unresponsive or consumes excessive resources, it must be brought under control.
+* In Linux, processes communicate through **signals**.
+* When a process receives a signal, it can either handle it according to its programming or ignore it.
 
-.
+|**Signal No.** |**Signal Name**    | **Description**|
+| -             | -                 | - |
+| 1             | `SIGHUP`          | Hang up detected; often used to restart processes|
+| 2             | `SIGINT`          | Interrupt from keyboard (usually Ctrl+C)|
+| 3             | `SIGQUIT`         | Quit request; stops the process and creates a core dump|
+| 9             | `SIGKILL`         | Forcefully kills the process; cannot be ignored|
+| 11            | `SIGSEGV`         | Segmentation fault (invalid memory access)|
+| 15            | `SIGTERM`         | Graceful termination request (default kill signal)|
+| 17            | `SIGSTOP`         | Unconditionally stops (pauses) the process|
+| 18            | `SIGTSTP`         | Pause the process (usually via Ctrl+Z); keeps it alive in the background|
+| 19            | `SIGCONT`         | Resumes a process that was stopped (by `STOP` or `TSTP`)|
 
-    1       SIGHUP      hang Up.
-    2       SIGINT      Interrupt.
-    3       SIGQUIT     stop.
-    9       SIGKILL     kill unconditionally.
-    11      SIGSEGV     segments violation.
-    15      SIGTERM     terminate if possible.
-    17      SIGSTOP     stop unconditionally.
-    18      SIGTSTP     stop or pause but keep alive in background.
-    19      SIGCONT     resume after "STOP" or "TSTP".
+**kill**
 
-#### kill
-
-> to send a process signal, must be **owner of the process** or the **root**.
+> **!** To send a process signal, sender must be the **owner of the process** or **root**.
 
 `$ kill 3987`\
-< by default sends a **SIGTERM** signal >
+--> by default sends a **SIGTERM** signal.
 
 `$ kill -s SIGINT 3987`\
-< sending a **SIGINT** signal >
+--> sending a **SIGINT** signal.
 
-- before sending a **SIGKILL** signal determine if the process have open files to prevent corruption.
+> **!** before sending a **SIGKILL** signal, check if the process have open files to prevent corruption.\
+> **!** `$ lsof -p 3987`
 
-`$ lsof -p 3987`
-
-#### pkill
+**pkill**
 
 `$ pkill http*`\
-< kill every process starting with **http** >
+--> kill every process starting with **http**
 
-- before batch killing processes, use **pgrep** to check for matching processes.
-
-`$ pgrep http*`
+> **!** before batch killing processes, use **pgrep** to check for matching processes.\
+> **!** `$ pgrep http*`
