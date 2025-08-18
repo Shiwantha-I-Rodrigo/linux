@@ -7,27 +7,21 @@
 
 <img src="images/git-min.png">
 
-- **Working Directory**
-    + directory where files are created / modified and deleted.
-- **Staging Area**
-    + located in the same area as working directory.
-    + hidden .git directory.
-    + files in the working directory are registered in the **.git/index**.
-    + index information include checksums / time-stamps / filenames.
-    + git compress and store (blobs) files in **.git/objects/**.
-- **Local Repository**
-    + contains each files history.
-    + project tree and commit info is stored as objects in **.git/objects/**.
-- **Remote Repository**
-    + typically a cloud based location or a local server.
-    + GitHub / GitLab / BitBucket / Launchpad.
+| **Component**         | **Description**|
+| -                     | - |
+| **Working Directory** | - Directory where files are created, modified, and deleted|
+| **Staging Area**      | - Located in the same area as the working directory. <br> - Implemented as a hidden **.git** directory. <br> - Files in the working directory are registered in **.git/index**. <br> - Index information includes checksums, timestamps, and filenames. <br> - Git compresses and stores (as blobs) files in **.git/objects/**|
+| **Local Repository**  | - Contains the history of each file. <br> - Project tree and commit information are stored as objects in **.git/objects/**|
+| **Remote Repository** | - Typically a cloud-based location or a local server. <br> - Examples include GitHub, GitLab, Bitbucket, and Launchpad|
 
-Git Benifits,
+**Git Benifits**,
 
 - Performance : git uses local files to operate.
 - History : git creates and stores snapshots.
 - Accuracy : git employs checksums to protect file integrity.
 - Decentralization : multiple developers can work on the same project, on seperate networks.
+
+---
 
 ## SETUP
 
@@ -56,7 +50,7 @@ Git Benifits,
     + `$ touch .gitignore`
 
 8. add entries for any excluded files to .gitignore.
-    + `e$ cho "env/*" >> .gitignore` / `$ echo "passwords.txt" >> .gitignore`
+    + `$ echo "env/*" >> .gitignore` / `$ echo "passwords.txt" >> .gitignore`
 
 9. create a README.md file.
     + `$ echo "# MY PROJECT" > README.md`
@@ -81,6 +75,8 @@ Git Benifits,
 14. checkout the git log.
     + `$ git log`
 
+---
+
 ## UPDATE LOCAL FILES
 
 Copy the latest files from the remote repo.
@@ -90,11 +86,15 @@ Copy the latest files from the remote repo.
 
 > any modified but un-pushed files in the local repo will cause the **pull** to fail.
 
+---
+
 ## CLONE
 
 Clone the entire remote repo to local directory including history.
 
 1. `$ git clone https://github.com/adam/my_project.git`
+
+---
 
 ## TAGS
 
@@ -106,6 +106,8 @@ Tagging can be,
 
 - **Annotated** : tag name + additional metadata.
     + `$ git tag -a v2.0 -m "official relese 2.0"`
+
+---
 
 ## MERGING
 
@@ -120,12 +122,12 @@ Multiple developers can work on multiple features using **Branches**.
 - view current branch.
     + `$ git branch` / `$ git status`
 
-.
-
+```
       master
     * feature1
+```
 
-the ( **\*** ) indicate the current branch.
+> **!** the **( \* )** indicate the current branch.
 
 - view a branches files.
     + `$ git ls-tree --name-only -r master`
@@ -134,6 +136,33 @@ the ( **\*** ) indicate the current branch.
     + `$ git checkout master`
     + `$ git merge feature1`
 
-> instead of merging, **rebasing** can performs new commits to all the files.\
-> simplyfing the history logs.\
+- rebase on current branch.
 > `$ git rebase master` 
+
+> **!** Merging preserves the history of both branches, creating a new “merge commit” that shows the point where two histories combined.\
+> **!** Rebasing, on the other hand, moves the entire branch to start from the latest commit of the target branch.
+
+```
+Before Merge:
+    
+    A---B---C (master)
+         \
+          D---E (feature)
+
+After `git merge feature` (from master):
+
+    A---B---C-------G (master)
+         \         /
+          D---E---/ (feature)
+```
+```
+Before Rebase:
+
+    A---B---C (master)
+         \
+          D---E (feature)
+
+After `git rebase master` (from feature):
+
+    A---B---C---D'---E' (feature)
+```
