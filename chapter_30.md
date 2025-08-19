@@ -1,156 +1,111 @@
 # ORCHESTRATING THE ENVIRONMENT
 
-Balncing and coordinating to acieve consistency.
+Balncing and coordinating resources to achieve consistency of desired outcome.
 
-- a few processes that require orchestration might be,
-    + Application development.
-    + Configuration management.
-    + Disaster recovery.
-    + Server monitoring.
-    + Security.
+Processes that require orchestration might be,
++ Application development.
++ Configuration management.
++ Disaster recovery.
++ Server monitoring.
++ Security.
+
+---
 
 ## DEVOPS
 
-One of the popular IT orchestration processes.
+A popular IT orchestration processes.
 
-- devops components.
-    + Continuous integration.
-    + Continuous testing.
-    + Continuous delivery.
-    + Infastructure as code.
-    + Infastructure automation.
-    + Monitoring and logging.
+devops components
 
-- Continual App Processing.
-    + using git features to provide continuous small updates.
-- Controlling App Environment.
-    + matching development and production environments.
-    + include OS / Hardware / Drivers / Libraries.
-- Defining App Environment.
-    + Development and production environments have predefined specifications.
-    + include OS / Hardware / Software Packages / Security Measures.
-- Deploying App Environment.
-    + App is moved to production environment in a continual manner.
-    + Ansible is used for DevOps deployment (infastructure as code automation).
-- Monitoring App Environment.
-    + App operations needs to be monitored and logged.
-    + Performance metrics must be monitored to ensure requirements are met.
-    + logged data can be used for future desicion making.
-    + monitoring provide alerts to potential failures.
+<img src="images/devops.png">
 
-### ANALYSING ATTRIBUTES
+- **Continual App Processing** : Leverage Git features to deliver continuous, incremental updates to the application.
 
-- Virtualization assist in DevOps.
-    + static environment.
-        * environment does not change through time.
-        * no sudo updates.
-    + version controling.
-        * prior to moving the container image to production.
-        * it is registered with a version controlling system.
-    + replace not update.
-        * production container is stopped.
-        * new container is moved into production and started.
-    + high availability.
-        * with the replication of containers.
-        + easier to replace each one, without shutting down the whole production.
+- **Controlling App Environment** : Ensure consistency between development and production by aligning OS, hardware, drivers, and libraries.
+
+- **Defining App Environment** : Clearly specify development and production environment requirements, including OS, hardware, software packages, and security protocols.
+
+- **Deploying App Environment** : Use tools like Ansible for automated, continuous deployment of infrastructure and applications to production.
+
+- **Monitoring App Environment** : Monitor operations, log application activity, track performance metrics, and use alerts to detect and respond to issues. Logged data supports future decision-making.
 
 **A Real World Example**
 
-1. development and production container is created.
-2. container is registered into a version control system.
-3. production container is replicated using **Kubernetes**.
-4. development containers config and security policies are set with **Puppet** or **SaltStack**.
-5. development team create small incremntal changes to the code.
-6. these small changes are tested automatically with **Jenkins** or **CircleCI**.
-7. after testing, the image is moved into version control.
-8. current production image is stopped and development container takes it's place.
-9. new image is monitored, and logged.
+1. Development and production environment is created as a **container**.
+2. Container image definitions (ie. **Dockerfiles**) are **registered** in a **version control system**.
+3. The production container is replicated using **Kubernetes** for scalability and high availability.
+4. Development container configurations and security policies are managed with **Puppet** or **SaltStack**.
+5. The development team creates small incremental changes to the codebase.
+6. These changes are automatically tested using **Jenkins** or **CircleCI**.
+7. After successful testing, the container image is tagged and pushed to a **container registry**.
+8. The current production container is stopped, and the new image is deployed in its place.
+9. The new deployment is monitored and logged for performance and stability.
+
+---
+
+### ANALYSING ATTRIBUTES
+
+**Virtualization** assist in DevOps,
+
+| **Benefit**               | **Description**|
+| -                         | - |
+| **Static Environment**    | - Environment remains consistent over time<br>- No unauthorized (`sudo`) updates|
+| **Version Controlling**   | - Container images are versioned<br>- Registered with a version control system before production deployment|
+| **Replace, Not Update**   | - Existing production container is stopped<br>- New container replaces it and is started|
+| **High Availability**     | - Containers are replicated<br>- Individual containers can be replaced without shutting down the entire system|
+
+---
 
 ## PROVISIONING INFASTRUCTURE
 
-Much like physical infastructure, virtual infastructure needs to be managed and controlled.
+Much like **physical** infastructure, **virtual** infastructure needs to be managed and controlled.
 
-1. Determine the infastructure.
-    + Operating system.
-    + Libraries.
-    + Services.
-    + Security configuration.
-    + Supporting software.
-    + Network utilities.
+<img src="images/iaas.png">
 
-2. Document the infastructure.
-    + configuration and policy as code settings are loaded into infastructure as code portal.
-    + called *automated configuration management*, used later in *build automation*.
+| **Step**                                  | **Details**|
+| -                                         | - |
+| **1. Determine the Infrastructure**       | - Operating system<br>- Libraries<br>- Services<br>- Security configuration<br>- Supporting software<br>- Network utilities|
+| **2. Document the Infrastructure**        | - Configuration and policy settings are loaded into an Infrastructure as Code (IaC) portal<br>- Known as *automated configuration management* and used later in *build automation*|
+| **3. Provide Revision Control**           | - Infrastructure as Code is inserted into an orchestration tool's registry for version control|
+| **4. Troubleshoot the Infrastructure**    | - Tech Ops and developers troubleshoot issues<br>- Orchestration tools compare documented configuration to actual production state|
 
-3. Provide revision control.
-    + infastructure as code is also inserted into an orchestration tool registry.
-
-4. Troubleshoot the infastructure.
-    + tech ops and software developers troubleshoot any problems.
-    + documented configuration is compared to production using orchestration tools.
+---
 
 ## AUTOMATING THE INFASTRUCTURE
 
 ### AUTOMATION TOOLS
 
-- Ansible
-    + by redhat.
-    + remotely controled servers ( **no agent software required** ).
-    + uses openSSH and Python to communicate using JSON with remote servers.
-- Chef
-    + ruby.
-    + define server configurations.
-- Puppet
-    + own language.
-    + define system configuration for remote servers.
-    + has remote agent software in server.
-- SaltStack
-    + by VMware.
-    + store server configuration in YAML.
-- Terraform
-    + own language.
-    + JSON data format.
-    + graph all resources, other operators can access.
+| **Tool**      | **Developer** | **Language / Format**         | **Key Features**|
+| -             | -             | -                             | - |
+| **Ansible**   | Red Hat       | YAML, uses Python and JSON    | - Agentless (no software required on remote servers)<br>- Uses OpenSSH and Python to communicate |
+| **Chef**      | —             | Ruby                          | - Defines server configurations|
+| **Puppet**    | —             | Own declarative language      | - Defines system configuration for remote servers<br>- Requires agent software on remote servers |
+| **SaltStack** | VMware        | YAML                          | - Stores server configuration in YAML|
+| **Terraform** | HashiCorp     | Own language + JSON           | - Graphs all resources<br>- Enables access for other operators|
 
 #### Agent Vs Agentless
 
-- Agent Monitoring
-    + tools are ochestration utilities that require software (agent) in the app container.
-    + send event (container crashing) and analysis data to other locations (monitor server).
-    + ( con claims ) performance hit.
-- Agentless Monitoring
-    + uses preexisting / embedded software to conduct monitoring.
-    + ( con claims ) inflexible.
-    + ( con claims ) unnessecery hassle to maintain.
+| **Monitoring Type**       | **Description**                                                                                                                                                   | **Pros**                                      | **Cons**|
+| -                         | -                                                                                                                                                                 | -                                             | - |
+| **Agent Monitoring**      | - Requires software (agent) installed in the application container<br>- Sends event and analysis data (e.g., container crashes) to external monitoring servers    | - Detailed data collection<br>- Customizable  | - Performance impact<br>- Additional software to manage|
+| **Agentless Monitoring**  | - Uses pre-existing or embedded tools for monitoring<br>- No need for extra agent installation                                                                    | - Lightweight<br>- Easier initial setup       | - Can be inflexible<br>- Potential maintenance hassles|
+
+---
 
 ### INVENTORY
 
-- when app containers shuts down, this triggers an event and the **desired state** is no longer met.
-- **desired state** is predetermined setting of how many containers should be running.
-- many orchestration utilities employ **self healing** ( auto deploy additional containers ).
+When an application container shuts down, it triggers an event indicating that the **desired state** ( a predefined number of running containers ) is no longer met.\
+Container orchestration tools monitor this state and employ **self-healing** mechanisms to automatically redeploy containers, restoring the system to its desired state.
+
 
 ### CONTAINER ORCHESTRATION TOOLS
 
-- Kubernetes
-    + by GOOGLE.
-    + **k8s** term is used to refer to Kubernetes.
-    + components
-        * Cluster service : use YAML to deploy and manage pods.
-        * Pod : contain one or more containers.
-        * Worker : pod host system that uses kublet agent to communicate with cluster service.
-        * YAML file : contain app containsers automated configurations and desired state settings.
-    + this distributed component system allows flexibility and scalability.
+| **Tool**          | **Developed By**  | **Key Terms / Concepts**                                                                                                                                                                                                                                                      | **Notes**|
+| -                 | -                 | -                                                                                                                                                                                                                                                                             | - |
+| **Kubernetes**    | Google            | - Also known as **K8s**  <br> - **Cluster Service**: Uses YAML to deploy/manage pods  <br> - **Pod**: Contains one or more containers  <br> - **Worker**: Hosts pods, communicates via kubelet agent  <br> - **YAML File**: Defines container configuration and desired state | Distributed system allows high **flexibility and scalability**|
+| **Docker Swarm**  | Docker            | - **Cluster**: A group of Docker containers  <br> - Monitors health and restores **desired state**                                                                                                                                                                            | Generally **faster** than Kubernetes|
+| **Mesos**         | Apache            | - Not a full orchestration system  <br> - Acts as a **distributed system kernel**  <br> - Has capability to **create containers**                                                                                                                                             | Often used with other tools (ie. Marathon) to handle orchestration|
 
-- Docker Swarm
-    + by DOCKER.
-    + **cluster** is a group of docker containers.
-    + monitor cluster health and return the cluster to desired state.
-    + faster than kubernetes.
-
-- Mesos
-    + not an ochestration system.
-    + distributed system kernal.
-    + can create containers.
 
 <img src="images/ci_cd_1.png">
 <img src="images/ci_cd_2.png">
