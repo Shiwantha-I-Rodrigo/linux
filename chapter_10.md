@@ -2,7 +2,7 @@
 
 |INPUTS                                                             |                           |                   |                           |OUTPUT|
 |-                                                                  |-                          |-                  |-                          |-|
-|User Input<br>/etc/login.defs<br>/etc/skel<br>/etc/default/useradd |--><br>--><br>--><br>-->   | **User Creation** |--><br>--><br>--><br>-->   | /home/userid<br>/etc/passwd<br>/etc/shadow<br>/etc/group|
+|User Input<br>/etc/login.defs<br>/etc/skel<br>/etc/default/useradd |--><br>--><br>--><br>-->   | **User Creation** |--><br>--><br>--><br>-->   | /home/user<br>/etc/passwd<br>/etc/shadow<br>/etc/group|
 
 ---
 
@@ -55,7 +55,7 @@
 
 ---
 
-## OUTPUT
+## OUTPUTS
 
 ### /etc/passwd
 --> contains essential information about all user accounts on the system, including system users and regular users.
@@ -107,37 +107,49 @@
 | **!\$6$...**                  | A **locked account with a valid password hash** — hash is present, but account is locked |
 | *(empty)*                     | No password set — **!!! may allow login without a password**|
 
-## ACCOUNT CREATION PROCESS
+---
 
-**`useradd `**`[option] [username]`\
---> create a new user account.
+## ACCOUNT MANAGEMENT
 
-| Option|                               | Description |
-| -     | -                             | - |
-| **-c**| **--comment**                 | Comment field (typically user’s full name)|
-| **-d**| **--home** / **--home-dir**   | Specify user's home directory|
-| **-G**| **--groups**                  | Specify additional (secondary) groups|
-| **-m**| **--create-home**             | Create home directory if it doesn't exist|
-| **-M**| **--no-create-home**          | Do **not** create a home directory|
-| **-u**| **--uid**                     | Set user ID|
-| **-r**| **--system**                  | Create a **system account** instead of a regular user|
-| **-p**|                               | set user’s password<br>( must be an **encrypted password hash**, not plain text)|
-| **-D**| **--defaults**                | display or set defaults from **/etc/default/useradd**|
-| **-b**| **--base-dir**                | specify base directory for home directories<br>can be used with **-D**|
-| **-e**| **--expiredate**              | Set account expiration date (**yyyy-mm-dd**)<br>can be used with **-D**|
-| **-f**| **--inactive**                | Days after password expires until account is disabled<br>can be used with **-D**|
-| **-g**| **--gid**                     | Specify default (primary) group ID<br>can be used with **-D**|
-| **-s**| **--shell**                   | Specify default shell (e.g., **/bin/bash**)<br>can be used with **-D**|
+**`useradd / usermod / userdel`**` [option] [username]`\
+--> create a new user account.\
+--> modify user acount information.\
+--> remove a user account.
 
-`$ useradd -c "robert" -d /custom/home/robert -m -e 2025-12-31 -g users -G wheel,audio,video -s /bin/bash -p $(openssl passwd -6 'StrongP@ssw0rd') robert`
---> useradd example.
+| **Option**           | **Long Option**        | **`useradd`**                                                               | **`usermod`**                                                | **`userdel`**                                                  |
+| -------------------- | ---------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------- |
+| **-D**               | **--defaults**         | Show or set default values for **useradd**                                  |                                                              |                                                                |
+|                      |                        | ↓ options compatible with **D**                                             |                                                              |                                                                |
+| **-b BASEDIR**       | **--base-dir BASEDIR** | Define base directory for home dirs (**-m** create home)                    |                                                              |                                                                |
+| **-e DATE**          | **--expiredate DATE**  | Set account expiration date (**YYYY-MM-DD** format)                         | Change account expiration date                               |                                                                |
+| **-g GID**           | **--gid GID**          | Assign primary group by GID                                                 | Change primary group                                         |                                                                |
+| **-s SHELL**         | **--shell SHELL**      | Set login shell                                                             | Change login shell                                           |                                                                |
+| **-f DAYS**          | **--inactive DAYS**    | Set deactivation period after expiration (**-1** never)                     | Change deactivation period                                   |                                                                |
+|                      |                        | ↑                                                                           |                                                              |                                                                |
+| **-f**               | **--force**            |                                                                             |                                                              | Force deletion (remove even if logged in or files in use)      |
+| **-d DIR**           | **--home DIR**         | Set home directory                                                          | Change home directory (**-m** also move files)               |                                                                |
+| **-G GRP1,GRP2**     | **--groups**           | Add to supplementary groups                                                 | Replace supplementary groups (**-a** **--append** instead)   |                                                                |
+| **-l NEWNAME**       | **--login NEWNAME**    |                                                                             | Change login/username                                        |                                                                |
+| **-m**               | **--create-home**      | Create home directory                                                       | Move home directory when combined with **-d**                |                                                                |
+| **-M**               | **--no-create-home**   | Do **not** create home directory (useful with system accounts)              |                                                              |                                                                |
+| **-N**               | **--no-user-group**    | Do **not** create a group with same name as user                            |                                                              |                                                                |
+| **-L**               | **--lock**             |                                                                             | Lock user account (disables password login)                  |                                                                |
+| **-U**               | **--unlock**           |                                                                             | Unlock user account (remove **!** from password hash in **/etc/shadow**)|                                                                |
+| **-u UID**           | **--uid UID**          | Set UID manually                                                            | Change UID (files owned by user may need manual fix)         |                                                                |
+| **-c COMMENT**       | **--comment COMMENT**  | Set description/comment                                                     | Change description/comment                                   |                                                                |
+| **-p PASSWD**        | **--password PASSWD**  | Set encrypted password (hash required, not plaintext)                       | Change password hash directly                                |                                                                |
+| **-r**               | **--remove**           |                                                                             |                                                              | Remove user’s home directory and mail spool along with account |
+| **-r**               | **--system**           | create a system user account instead                                        |                                                              |                                                                |
 
-> **!** it is much better to use `passwd` command than using the **-p** option.
+> **!** `$ useradd -p $(openssl passwd -6 'StrongP@ssw0rd') robert` --> It is much better to use `passwd` command than using the **-p** option.
 
-> **!** debian distros promte **adduser** interactive program instead of **useradd** command\
-> **!** may even link **useradd** to run **adduser**.
+Debian distros promte **adduser** interactive program instead of **useradd** command may even link **useradd** to run **adduser**.
 
-## MANAGE PASSWORDS
+On delete, any warnings due to missing files, may be due to files that were not created during account creation and can be ignored.
+
+---
+
+## PASSWORD MANAGEMENT
 
 **`passwd `**`[option] [username]`\
 --> modify the login password of a user.
@@ -154,77 +166,19 @@
 | **-w**            | **--warning** / **--warndays**| Number of days before password expiry that the user is warned|
 | **-x**            | **--maximum** / **--maxdays** | Maximum days a password is valid before it must be changed|
 
-**`chage `**`[option] [username]`\
---> view and modify user password aging policies.
+**`chage `**`[-l] [username]`\
+--> activate interactive mode to change all aging information.\
+**[ l ]** --> List current password aging information for the user.
 
-| **Option**    | **Description** |
-| -             | - |
-| **-l**        | **List current password aging information** for the user|
-|               | **No options**, activate interactive mode to change all aging information|
+---
 
-## MANAGE ACCOUNTS
-
-**`usermod `**`[option] [username]`\
---> modify user acount information.
-
-| **Option**    |                   | **Description** |
-| -             | -                 | - |
-| **-c**        | **--comment**     | Change the **comment field**|
-| **-d**        | **--home**        | **New home directory** path. Add **-m** to **move** existing files to the new location|
-| **-e**        | **--expiredate**  | Account **expiration date** (format: **YYYY-MM-DD**)|
-| **-f**        | **--inactive**    | Number of **inactive days** after password expiration before account is disabled|
-| **-g**        | **--gid**         | User's **primary group** ( group ID or group name )|
-| **-G**        | **--groups**      | User's **additional groups** (comma-separated). Use **-a** to **append** instead of overwrite|
-| **-l**        | **--login**       | **username/login name**. **Does not** rename the home directory|
-| **-L**        | **--lock**        | **Lock the account** (prepends **!** to the password hash in **/etc/shadow**)|
-| **-s**        | **--shell**       | User's **default login shell**|
-| **-u**        | **--uid**         | User's **UID (user ID)**|
-| **-U**        | **--unlock**      | **Unlock the account** (removes **!** from password hash in **/etc/shadow**)|
-
-**`$ sudo userdel -r Adam`**\
---> remove user Adam and home directory, any warnings due to missing files,\
-may be due to files that were not created during account creation and can be ignored.
-
-## MANAGE GROUPS
+## GROUP MANAGEMENT
 
 - Linux uses Discretionary Access Control ( **DAC : using user/group ownership to control file access** ) as its primary permission model.
 - User can belong to **multiple groups**, but when a process is started by the user, it runs with **a single group ID**.
 - When a user logs into a Linux system, their shell session and processes start with their primary group.
 - Every group in Linux has a **Name** and a **Group ID (GID)**.
-- When a new user is created without specifying a default group. the system, automatically creates a new group\
-  with the same name as the username, which becomes the user's primary group.
-
-### /etc/group
---> stores group information.
-
-| Field                     | Description |
-| -                         | - |
-| **group_name**            | The **name** of the group|
-| **password_placeholder**  | Usually **x**, indicating a group password (now deprecated)<br>***!* check /etc/gshadow file to confirm that a password is set**|
-| **GID**                   | The **Group ID**, unique numeric identifier for the group|
-| **user_list**             | A **comma-separated list** of users who are **members of this group**<br>! Users who have this group as their primary group are not shown in the this field|
-
----
-
-**`getent `**`[database] [key]`\
-- supported databases :
-    + aliases
-    + group
-    + gshadow
-    + hosts
-    + passwd
-    + services
-    + shadow
-    + etc.
-
-`$ getent passwd Adam`\
---> show Adam record from /etc/passwd file.
-
-    Adam:x:1002:1002::/home/Adam:/bin/bash
-                 ↑
-            primary group
-
----
+- When a new user is created without specifying a default group. the system, automatically creates a new group with the same name as the username, which becomes the user's primary group.
 
 **`groupadd` / `groupmod` / `groupdel`**\
 --> manage groups.
@@ -241,15 +195,47 @@ may be due to files that were not created during account creation and can be ign
 > **!** However, if the group is a primary group for any user, the command will fail with an error and the group itself will not be deleted.\
 > **!** but the group will still be removed from the secondary group lists because of the attempt.
 
----
+### /etc/group
+--> stores group information.
 
-    myGroup:!::
-            ↑
-    no password is set
+| Field                     | Description |
+| -                         | - |
+| **group_name**            | The **name** of the group|
+| **password_placeholder**  | Usually **x**, indicating a group password (now deprecated)<br>***!* check /etc/gshadow file to confirm that a password is set**|
+| **GID**                   | The **Group ID**, unique numeric identifier for the group|
+| **user_list**             | A **comma-separated list** of users who are **members of this group**<br>! Users who have this group as their primary group are not shown in the this field|
+
+```
+myGroup:!::
+        ↑
+no password is set
+```
 
 > **!** *Group passwords allow non members access to the group, which is a bad security practice.*\
 > **!** *instead of setting a password, use group memberships to allow access.*
 
+---
+---
+
+**`getent `**`[database] [key]`
+
+- supported databases :
+    + aliases
+    + group
+    + gshadow
+    + hosts
+    + passwd
+    + services
+    + shadow
+    + etc.
+
+`$ getent passwd Adam` --> show Adam record from /etc/passwd file.
+
+    Adam:x:1002:1002::/home/Adam:/bin/bash
+                 ↑
+            primary group
+
+---
 ---
 
 # ENVIRONMENTAL SETTINGS
