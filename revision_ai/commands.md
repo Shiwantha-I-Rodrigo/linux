@@ -99,6 +99,29 @@
 
 <br>
 
+| **PV Command** | **VG Command**    | **LV Command** | **Description**                                                        |
+| -------------- | ----------------- | -------------- | ---------------------------------------------------------------------- |
+| **pvcreate**   | **vgcreate**      | **lvcreate**   | Initialize a PV, create a VG, or create an LV                          |
+| **pvchange**   | **vgchange**      | **lvchange**   | Update or modify properties of PV, VG, or LV                           |
+| **pvremove**   | **vgremove**      | **lvremove**   | Delete a PV, VG, or LV                                                 |
+| **pvdisplay**  | **vgdisplay**     | **lvdisplay**  | Show detailed information about a PV, VG, or LV                        |
+| **pvscan**     | **vgscan**        | **lvscan**     | Search and list available PVs, VGs, or LVs                             |
+| **pvs**        | **vgs**           | **lvs**        | Display a summary view of PVs, VGs, or LVs                             |
+| **pvck**       | **vgck**          |                | Verify consistency and integrity of PV or VG metadata                  |
+| **pvmove**     |                   |                | Relocate data from one PV to another                                   |
+|                | **vgextend**      | **lvextend**   | Add a PV to a VG / Increase the size of an LV                          |
+|                | **vgreduce**      | **lvreduce**   | Remove a PV from a VG / Decrease the size of an LV                     |
+|                | **vgcfgbackup**   | **lvmdump**    | Backup VG metadata / Collect and save LVM configuration into a tarball |
+|                | **vgcfgrestore**  |                | Restore VG metadata from a backup file                                 |
+|                | **vgexport**      |                | Mark a VG as inactive/unavailable for migration to another system      |
+|                | **vgimport**      |                | Re-import an exported VG to make it usable again                       |
+|                | **vgimportclone** |                | Import a duplicate VG with a new name                                  |
+|                | **vgmerge**       |                | Combine two VGs into a single VG                                       |
+|                | **vgrename**      | **lvrename**   | Change the name of a VG or LV                                          |
+|                |                   | **lvresize**   | Adjust the size of an LV (increase or shrink)                          |
+
+<br>
+
 ## 6. FS Tools
 
 | Command                                                   | Description                                                   |
@@ -154,14 +177,7 @@
 | Command                               | Description                   | Options                                                                                                                                                                                                                                                                                                                                                                             |
 | ------------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tar [option] [file+++]`              | Archive/compress files.       | `-c` → Create archive.<br>`-f` → Specify filename.<br>`-u` → Update archive.<br>`-g` → Use snapshot for incremental backups.<br>`-z` → Gzip compression.<br>`-j` → Bzip2 compression.<br>`-J` → XZ compression.<br>`-v` → Verbose list of processed files.<br>`-d` → Compare archive with filesystem.<br>`-t` → List contents.<br>`-W` → Verify archive.<br>`-x` → Extract archive. |
-| `gzip [option] [file+++]`             | Compress file (gzip format).  |                                                                                                                                                                                                                                                                                                                                                                                     |
-| `gunzip [option] [file.gz]`           | Decompress gzip file.         |                                                                                                                                                                                                                                                                                                                                                                                     |
-| `bzip2 [option] [file+++]`            | Compress file (bzip2 format). |                                                                                                                                                                                                                                                                                                                                                                                     |
-| `bunzip2 [option] [file.bz2]`         | Decompress bzip2 file.        |                                                                                                                                                                                                                                                                                                                                                                                     |
-| `xz [option] [file+++]`               | Compress file (xz format).    |                                                                                                                                                                                                                                                                                                                                                                                     |
-| `unxz [option] [file.xz]`             | Decompress xz file.           |                                                                                                                                                                                                                                                                                                                                                                                     |
 | `zip [option] [file.zip] [file+++]`   | Create ZIP archive.           |                                                                                                                                                                                                                                                                                                                                                                                     |
-| `unzip [option] [archive.zip]`        | Extract ZIP archive.          |                                                                                                                                                                                                                                                                                                                                                                                     |
 | `[filelist] \| cpio [option] [>] [file]`<br>`cpio [option] -O [file] [<] [filelist]`| Copy files to/from archive.   | `-o` → Create archive from input.<br>`-O [file]` → Write archive to file.<br>`-i` → Extract from archive.<br>`-I [file]` → Read archive from file.<br>`-t` → List contents.|
 
 <br>
@@ -355,6 +371,10 @@
 | `repquota [option] [-a / filesystem]`     | Generate a summary report of disk usage and quotas for users and groups.                     | `-a` → Report on all mounted filesystems with quotas <br> `-u` → Report user quotas <br> `-g` → Report group quotas <br> `-v` → Verbose – include users/groups without usage <br> `-s` → Human-readable sizes (KB, MB, GB) |
 
 ---
-Prompts --->
+
+Prompt_01 --->
 context : RockyOS 8.5 or Ubuntu 20.04 LTS or fedora 34. using the table/s below, create several real-life story based workflow scenarios in using all the commands and all the options given (commands can be used without options where required) and provide answer-keys only after all the scenarios. verify that all the options and commands are used. combine commands in each scenario. provide any example text files used. try not to include the command and options used within the question.
 verify if all the commands and options are used and create additional scenarios to include everything if nessasery.
+
+Prompt_02 --->
+context : i am a Linux systems administrator using Ubuntu 20.04 or red hat 8.5 . considering the following table identify and rank the options listed for each command by most common usage for daily usage or troubleshooting (do not print the ranking list). using the most used options, generate some complete real life work-flow and troubleshooting stories and provide step by step with explanations. at the end include a small summary block of the options used. show the percentage of options coverage for each command. table :
