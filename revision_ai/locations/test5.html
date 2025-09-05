@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux Config Files Quiz - Test 3</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #eef2f5; }
+    h1 { text-align: center; }
+    .quiz-container { max-width: 900px; margin: auto; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 0 12px rgba(0,0,0,0.15); }
+    .question { margin-bottom: 18px; }
+    .answers { list-style-type: none; padding: 0; }
+    .answers li { margin-bottom: 6px; }
+    button { padding: 10px 25px; margin-top: 12px; cursor: pointer; font-size: 16px; }
+    .result { margin-top: 25px; font-size: 18px; font-weight: bold; text-align: center; }
+</style>
+</head>
+<body>
+<div class="quiz-container">
+<h1>Linux Config Files Quiz - Test 3</h1>
+<div id="quiz"></div>
+<button onclick="submitQuiz()">Submit</button>
+<div id="result" class="result"></div>
+</div>
+
+<script>
+const questions = [
+    { q: "Which file is legacy GRUB (pre-GRUB2) menu configuration?", a: ["/boot/grub/menu.lst", "/boot/grub/grub.cfg", "/boot/grub2/grub.cfg", "/etc/default/grub"], correct: "/boot/grub/menu.lst" },
+    { q: "Which directory contains GRUB2 scripts?", a: ["/etc/grub.d/", "/etc/default/grub", "/boot/grub2/grub.cfg", "/boot/grub/grub.cfg"], correct: "/etc/grub.d/" },
+    { q: "Which file defines SysV init on Debian?", a: ["/etc/inittab", "/etc/init.d/", "/etc/rc.local", "/etc/systemd/system/"], correct: "/etc/inittab" },
+    { q: "Where are RHEL SysV runlevel directories located?", a: ["/etc/rc.d/rcx.d/", "/etc/rcx.d/", "/etc/init.d/", "/etc/rc.local"], correct: "/etc/rc.d/rcx.d/" },
+    { q: "Debian local init script file?", a: ["/etc/rc.local", "/etc/rc.d/rc.local", "/etc/init.d/", "/etc/systemd/system/"], correct: "/etc/rc.local" },
+    { q: "RHEL local init script file?", a: ["/etc/rc.d/rc.local", "/etc/rc.local", "/etc/init.d/", "/etc/systemd/system/"], correct: "/etc/rc.d/rc.local" },
+    { q: "Debian static network config file?", a: ["/etc/network/interfaces", "/etc/sysconfig/network-scripts/", "/etc/hostname", "/etc/HOSTNAME"], correct: "/etc/network/interfaces" },
+    { q: "RHEL system hostname file?", a: ["/etc/HOSTNAME", "/etc/hostname", "/etc/resolv.conf", "/etc/services"], correct: "/etc/HOSTNAME" },
+    { q: "Which file contains DNS resolvers?", a: ["/etc/resolv.conf", "/etc/hostname", "/etc/services", "/etc/default/ufw"], correct: "/etc/resolv.conf" },
+    { q: "Where are APT repositories configured?", a: ["/etc/apt/sources.list", "/etc/yum.repos.d/", "/etc/modprobe.d/", "/etc/modules-load.d/"], correct: "/etc/apt/sources.list" },
+    { q: "YUM/DNF repository directory?", a: ["/etc/yum.repos.d/", "/etc/apt/sources.list", "/etc/modprobe.d/", "/etc/modules-load.d/"], correct: "/etc/yum.repos.d/" },
+    { q: "File for blocking shell access?", a: ["/sbin/nologin", "/bin/false", "/etc/passwd", "/etc/shadow"], correct: "/sbin/nologin" },
+    { q: "File for PAM password policy on RHEL?", a: ["/etc/pam.d/password-auth", "/etc/pam.d/common-password", "/etc/pam.conf", "/etc/security/pwquality.conf"], correct: "/etc/pam.d/password-auth" },
+    { q: "Debian PAM password policy file?", a: ["/etc/pam.d/common-password", "/etc/pam.d/password-auth", "/etc/pam.conf", "/etc/security/pwquality.conf"], correct: "/etc/pam.d/common-password" },
+    { q: "File for iptables-persistent rules (Debian)?", a: ["/etc/iptables/rules.v4", "/etc/sysconfig/iptables", "/etc/default/ufw", "/etc/ufw/user.rules"], correct: "/etc/iptables/rules.v4" },
+    { q: "Default UFW config file?", a: ["/etc/default/ufw", "/etc/ufw/user.rules", "/etc/ufw/applications.d/", "/etc/iptables/rules.v4"], correct: "/etc/default/ufw" },
+    { q: "Where are UFW user rules stored?", a: ["/etc/ufw/user.rules", "/etc/ufw/user6.rules", "/etc/default/ufw", "/etc/iptables/rules.v4"], correct: "/etc/ufw/user.rules" },
+    { q: "Where are RHEL firewall zone configs?", a: ["/usr/lib/firewalld/zones/", "/etc/sysconfig/iptables", "/etc/ufw/user.rules", "/etc/iptables/rules.v4"], correct: "/usr/lib/firewalld/zones/" },
+    { q: "File for core account DB?", a: ["/etc/passwd", "/etc/shadow", "/etc/group", "/etc/gshadow"], correct: "/etc/passwd" },
+    { q: "Directory for systemd unit files?", a: ["/etc/systemd/system/", "/run/systemd/system/", "/usr/lib/systemd/system/", "/etc/init.d/"], correct: "/etc/systemd/system/" },
+    { q: "Debian auto-load kernel modules?", a: ["/etc/modules-load.d/", "/etc/modprobe.d/", "/etc/modprobed/", "/run/modprobed/"], correct: "/etc/modules-load.d/" },
+    { q: "File for RHEL kernel module configs?", a: ["/etc/modprobed/", "/etc/modprobe.d/", "/etc/modules-load.d/", "/run/modprobed/"], correct: "/etc/modprobed/" },
+    { q: "Where is legacy module config?", a: ["/etc/modules.conf", "/etc/modprobe.d/", "/etc/modules-load.d/", "/run/modprobed/"], correct: "/etc/modules.conf" },
+    { q: "Debian skeleton files directory?", a: ["/etc/skel", "/etc/login.defs", "/etc/default/useradd", "/etc/passwd"], correct: "/etc/skel" },
+    { q: "File for chrony config?", a: ["/etc/chrony/chrony.conf", "/etc/systemd/timesyncd.conf", "/etc/default/grub", "/etc/apt/sources.list"], correct: "/etc/chrony/chrony.conf" },
+    { q: "systemd-timesyncd config directory?", a: ["/etc/systemd/timesyncd.d/", "/etc/chrony/chrony.conf", "/etc/default/grub", "/etc/apt/sources.list"], correct: "/etc/systemd/timesyncd.d/" },
+    { q: "SSH user client configuration file?", a: ["~/.ssh/config", "/etc/ssh/ssh_config", "/etc/ssh/sshd_config", "/etc/login.defs"], correct: "~/.ssh/config" },
+    { q: "Legacy LILO config file?", a: ["/etc/lilo.conf", "/boot/grub/grub.cfg", "/etc/default/grub", "/etc/rc.local"], correct: "/etc/lilo.conf" }
+];
+
+function loadQuiz() {
+    const quizDiv = document.getElementById("quiz");
+    questions.forEach((q,i) => {
+        const div = document.createElement("div");
+        div.className = "question";
+        div.innerHTML = `<p>${i+1}. ${q.q}</p>
+        <ul class="answers">
+            ${q.a.map((ans,j) => `<li><input type="radio" name="q${i}" value="${ans}" id="q${i}_${j}"> <label for="q${i}_${j}">${ans}</label></li>`).join('')}
+        </ul>`;
+        quizDiv.appendChild(div);
+    });
+}
+
+function submitQuiz() {
+    let score = 0;
+    questions.forEach((q,i) => {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        if (selected && selected.value === q.correct) score++;
+    });
+    document.getElementById("result").innerHTML = `You scored ${score} out of ${questions.length}`;
+}
+
+loadQuiz();
+</script>
+</body>
+</html>

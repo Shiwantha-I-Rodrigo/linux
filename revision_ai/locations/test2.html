@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux Admin Interactive Quiz</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
+    h1 { color: #333; }
+    .question { margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    .options label { display: block; margin: 5px 0; }
+    #submitBtn { padding: 10px 20px; font-size: 16px; margin-top: 20px; }
+    #score { font-size: 20px; font-weight: bold; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h1>Linux Admin Interactive Quiz</h1>
+<form id="quizForm"></form>
+<button id="submitBtn">Submit</button>
+<div id="score"></div>
+
+<script>
+const questions = [
+    // Bootloader
+    {q: "Which file is used by GRUB2 on Debian?", options:["/boot/grub/menu.lst","/boot/grub/grub.cfg","/boot/grub2/grub.cfg"], answer:1},
+    {q: "Where is the EFI system partition usually mounted?", options:["/boot/efi/","/etc/default/grub","/etc/lilo.conf"], answer:0},
+    {q: "Which file contains global GRUB defaults on Debian?", options:["/etc/default/grub","/etc/grub.d/","/boot/grub/grub.cfg"], answer:0},
+
+    // Init & Service Management
+    {q: "Where are Systemd unit files prioritized?", options:["/usr/lib/systemd/system/ > /etc/systemd/system/ > /run/systemd/system/","/etc/systemd/system/ > /run/systemd/system/ > /usr/lib/systemd/system/","/run/systemd/system/ > /etc/systemd/system/ > /usr/lib/systemd/system/"], answer:1},
+    {q: "Which file is used for SysV init on RHEL?", options:["/etc/init.d/","/etc/rc.d/init.d/","/etc/rc.local"], answer:1},
+    {q: "Which directory contains runlevel directories on Debian?", options:["/etc/rc.d/rcx.d/","/etc/rcx.d/","/etc/rc.local"], answer:1},
+
+    // Networking
+    {q: "Where is the static network configuration on Debian?", options:["/etc/sysconfig/network-scripts/","/etc/network/interfaces","/etc/resolv.conf"], answer:1},
+    {q: "Which file sets system hostname on RHEL?", options:["/etc/hostname","/etc/HOSTNAME","/etc/services"], answer:1},
+    {q: "Which file lists network service names and ports?", options:["/etc/services","/etc/resolv.conf","/etc/hosts"], answer:0},
+
+    // User Creation
+    {q: "Which file sets default useradd settings on Debian?", options:["/etc/login.defs","/etc/default/useradd","/etc/skel"], answer:1},
+    {q: "Which command blocks shell access using its binary?", options:["/bin/bash","/bin/false","/sbin/nologin"], answer:2},
+
+    // SSH
+    {q: "Which file is the SSH server configuration?", options:["/etc/ssh/ssh_config","~/.ssh/config","/etc/ssh/sshd_config"], answer:2},
+    {q: "Which file configures the SSH client for a specific user?", options:["/etc/ssh/ssh_config","~/.ssh/config","/etc/ssh/sshd_config"], answer:1},
+
+    // Time Services
+    {q: "Chrony config file is located at?", options:["/etc/chrony/chrony.conf","/etc/systemd/timesyncd.conf","/etc/ntp.conf"], answer:0},
+    {q: "systemd-timesyncd config file is?", options:["/etc/systemd/timesyncd.conf","/etc/chrony/chrony.conf","/etc/time.conf"], answer:0},
+
+    // Package Management
+    {q: "APT repos are listed in?", options:["/etc/yum.repos.d/","/etc/apt/sources.list","/etc/pacman.conf"], answer:1},
+    {q: "YUM/DNF repos are located in?", options:["/etc/yum.repos.d/","/etc/apt/sources.list","/etc/dnf.conf"], answer:0},
+
+    // Kernel Modules
+    {q: "Debian auto-load modules config directory?", options:["/etc/modules-load.d/","/etc/modprobe.d/","/etc/modules.conf"], answer:0},
+    {q: "File used to blacklist modules?", options:["/etc/modprobe.d/blacklist.conf","/etc/modules.conf","/etc/modprobed/"], answer:0},
+
+    // PAM
+    {q: "Debian PAM password policy file?", options:["/etc/pam.d/common-password","/etc/pam.d/password-auth","/etc/pam.conf"], answer:0},
+    {q: "RHEL PAM password policy file?", options:["/etc/pam.d/password-auth","/etc/pam.d/common-password","/etc/pam.d/remote"], answer:0},
+    {q: "PAM login failure tracking directory?", options:["/var/run/faillock/","/etc/security/opasswd","/etc/pam.d/login"], answer:0},
+
+    // Firewall
+    {q: "UFW default config file?", options:["/etc/default/ufw","/etc/ufw/user.rules","/etc/ufw/applications.d/"], answer:0},
+    {q: "Firewalld zone configs directory?", options:["/usr/lib/firewalld/zones/","/etc/sysconfig/iptables","/etc/ufw/applications.d/"], answer:0},
+    {q: "iptables-persistent rules on Debian?", options:["/etc/iptables/rules.v4","/etc/sysconfig/ip6tables","/etc/default/ufw"], answer:0},
+
+    // Extra Questions
+    {q: "Legacy LILO config file?", options:["/boot/grub/menu.lst","/etc/lilo.conf","/boot/grub2/grub.cfg"], answer:1},
+    {q: "SysV local init script on RHEL?", options:["/etc/rc.d/rc.local","/etc/rc.local","/etc/init.d/"], answer:0},
+    {q: "SSH client global config?", options:["~/.ssh/config","/etc/ssh/ssh_config","/etc/ssh/sshd_config"], answer:1},
+    {q: "PAM password history file?", options:["/etc/security/opasswd","/etc/security/pwquality.conf","/etc/pam.d/common-password"], answer:0}
+];
+
+const form = document.getElementById('quizForm');
+
+questions.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'question';
+    div.innerHTML = `<p>${i+1}. ${q.q}</p>`;
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'options';
+    q.options.forEach((opt, idx) => {
+        const id = `q${i}_opt${idx}`;
+        optionsDiv.innerHTML += `
+            <label>
+                <input type="radio" name="q${i}" value="${idx}" id="${id}">
+                ${opt}
+            </label>
+        `;
+    });
+    div.appendChild(optionsDiv);
+    form.appendChild(div);
+});
+
+document.getElementById('submitBtn').addEventListener('click', () => {
+    let score = 0;
+    questions.forEach((q, i) => {
+        const answer = form[`q${i}`].value;
+        if (parseInt(answer) === q.answer) score++;
+    });
+    document.getElementById('score').innerText = `Your score: ${score} / ${questions.length}`;
+});
+</script>
+
+</body>
+</html>

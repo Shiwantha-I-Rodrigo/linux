@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux SysAdmin Interactive Test</title>
+<style>
+  body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+  h1 { text-align: center; }
+  .question { background: #fff; padding: 15px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+  .options { margin-top: 10px; }
+  button { padding: 10px 15px; margin-top: 20px; border: none; background: #007bff; color: #fff; border-radius: 5px; cursor: pointer;}
+  button:hover { background: #0056b3; }
+  .result { background: #d4edda; color: #155724; padding: 10px; margin-top: 20px; border-radius: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Linux SysAdmin Quiz</h1>
+
+<div id="quiz"></div>
+<button onclick="submitQuiz()">Submit</button>
+<div id="result" class="result" style="display:none;"></div>
+
+<script>
+const questions = [
+  {q: "Which file is the GRUB2 config on Debian/Ubuntu?", a:["/boot/grub/grub.cfg","/etc/default/grub","/boot/grub/menu.lst"], correct: 0},
+  {q: "Where is the GRUB2 config located on RHEL?", a:["/boot/grub2/grub.cfg","/boot/grub/grub.cfg","/etc/grub.d/"], correct: 0},
+  {q: "Which file contains the LILO configuration?", a:["/etc/lilo.conf","/boot/grub/menu.lst","/etc/default/grub"], correct: 0},
+  {q: "Where can you find systemd unit files with highest priority?", a:["/etc/systemd/system/","/run/systemd/system/","/usr/lib/systemd/system/"], correct: 0},
+  {q: "Which file is used for SysV init on Debian?", a:["/etc/init.d/","/etc/rc.d/init.d/","/etc/rc.local"], correct: 0},
+  {q: "Which file sets static networking on Debian?", a:["/etc/network/interfaces","/etc/sysconfig/network-scripts/","/etc/hostname"], correct: 0},
+  {q: "Which file sets system hostname on RHEL?", a:["/etc/HOSTNAME","/etc/hostname","/etc/resolv.conf"], correct: 0},
+  {q: "Where is SSH server configuration located?", a:["/etc/ssh/sshd_config","~/.ssh/config","/etc/ssh/ssh_config"], correct: 0},
+  {q: "Where is the PAM password policy on Debian?", a:["/etc/pam.d/common-password","/etc/pam.d/password-auth","/etc/pam.conf"], correct: 0},
+  {q: "Which file is used to block shell access?", a:["/sbin/nologin","/etc/passwd","/etc/shadow"], correct: 0},
+  {q: "Where are APT repos configured?", a:["/etc/apt/sources.list","/etc/yum.repos.d/","/etc/default/ufw"], correct: 0},
+  {q: "Where are YUM/DNF repos configured on RHEL?", a:["/etc/yum.repos.d/","/etc/apt/sources.list","/etc/modules-load.d/"], correct: 0},
+  {q: "Where do you configure auto-load kernel modules on Debian?", a:["/etc/modules-load.d/","/etc/modprobe.d/","/etc/modules.conf"], correct: 0},
+  {q: "Where is the local init script on RHEL?", a:["/etc/rc.d/rc.local","/etc/rc.local","/etc/init.d/"], correct: 0},
+  {q: "Where are UFW rules stored?", a:["/etc/ufw/user.rules","/etc/default/ufw","/etc/iptables/rules.v4"], correct: 0},
+  {q: "Which file tracks PAM login failures?", a:["/var/run/faillock/","/etc/security/opasswd","/etc/security/pwquality.conf"], correct: 0},
+  {q: "Where is the Debian PAM manual config?", a:["/usr/share/pam-configs/config1","/etc/pam.d/password-auth-local","/etc/pam.d/common-password"], correct: 0},
+  {q: "Which file contains DNS resolvers?", a:["/etc/resolv.conf","/etc/services","/etc/hostname"], correct: 0},
+  {q: "Where are iptables-persistent rules on Debian?", a:["/etc/iptables/rules.v4","/etc/sysconfig/iptables","/etc/default/ufw"], correct: 0},
+  {q: "Where are Firewalld zone configs located on RHEL?", a:["/usr/lib/firewalld/zones/","/etc/ufw/user.rules","/etc/sysconfig/ip6tables"], correct: 0},
+  {q: "Where is the useradd defaults file on Debian?", a:["/etc/default/useradd","/etc/login.defs","/etc/skel"], correct: 0},
+  {q: "Where are global GRUB defaults on Debian?", a:["/etc/default/grub","/etc/grub.d/","/boot/grub/grub.cfg"], correct: 0},
+  {q: "Where is the SSH client user config?", a:["~/.ssh/config","/etc/ssh/ssh_config","/etc/ssh/sshd_config"], correct: 0},
+  {q: "Where is Chrony config located?", a:["/etc/chrony/chrony.conf","/etc/systemd/timesyncd.conf","/etc/systemd/timesyncd.d/"], correct: 0},
+  {q: "Where are RHEL SysV runlevel dirs?", a:["/etc/rc.d/rcx.d/","/etc/rcx.d/","/etc/rc.local"], correct: 0},
+  {q: "Which file contains core account databases?", a:["/etc/passwd","/etc/login.defs","/etc/skel"], correct: 0},
+  {q: "Where is the Debian UFW defaults file?", a:["/etc/default/ufw","/etc/ufw/user.rules","/etc/ufw/applications.d/"], correct: 0},
+  {q: "Where is the RHEL PAM auto config?", a:["/etc/pam.d/password-auth-local","/etc/pam.d/password-auth","/etc/pam.conf"], correct: 0},
+  {q: "Where are modprobe blacklist modules configured?", a:["/etc/modprobe.d/blacklist.conf","/etc/modules.conf","/etc/modprobed/"], correct: 0},
+  {q: "Where are network service names stored?", a:["/etc/services","/etc/resolv.conf","/etc/network/interfaces"], correct: 0},
+];
+
+const quizDiv = document.getElementById("quiz");
+
+questions.forEach((q, i) => {
+  const qDiv = document.createElement("div");
+  qDiv.className = "question";
+  qDiv.innerHTML = `<strong>Q${i+1}:</strong> ${q.q}<div class="options">
+    ${q.a.map((opt, idx) => `<label><input type="radio" name="q${i}" value="${idx}"> ${opt}</label><br>`).join('')}
+  </div>`;
+  quizDiv.appendChild(qDiv);
+});
+
+function submitQuiz() {
+  let score = 0;
+  questions.forEach((q, i) => {
+    const selected = document.querySelector(`input[name="q${i}"]:checked`);
+    if(selected && parseInt(selected.value) === q.correct) score++;
+  });
+  document.getElementById("result").style.display = "block";
+  document.getElementById("result").innerText = `You scored ${score} out of ${questions.length}`;
+}
+</script>
+
+</body>
+</html>
