@@ -149,6 +149,7 @@ Each chain has a **policy**, which is the default action applied to packets if t
 - ACCEPT: Allow the packet.
 - DROP: Silently discard the packet.
 - REJECT: Discard the packet and send an error response.
+- etc...
 
 ---
 
@@ -200,6 +201,8 @@ Each chain has a **policy**, which is the default action applied to packets if t
 ### nftables
 
 > **!** nftables use the same same chain / table / policies /rules concepts as iptables, but the format is simplified.
+
+<img src="images/nftables.png">
 
 `$ nft list tables`\
 --> list current tables.
@@ -366,6 +369,32 @@ Ports:
   22/tcp
 ```
 
+---
+
+## PORT FORWARDING
+
+>  get to a resource that you can’t get to directly, but a ssh server that you have access to can.
+
+***LOCAL PORT FORWARDING***
+
+<img src="images/portforward_l.png">
+
+`ssh -f -N -L 123:localhost:456 yelow@192.168.0.2`
+
+remote --> `nc -l -p 456`\
+local --> `nc localhost 123`
+
+!!! local port 123 is connected to remote port 456, any sevice targeting local port 123 will be redirected to remote port 456.
+
+**REMOTE PORT FORWARDING**
+
+<img src="images/portforward_r.png">
+
+Remote host initiates ssh tunnel.
+
+`ssh -R 123:localhost:456 yelow@192.168.0.2`
+
+!!! now the local port 456 is connected to remote port 123, any service targeting remote port 123 will be redirected to local port 456.
 ---
 
 ## IP PACKET FORWARDING

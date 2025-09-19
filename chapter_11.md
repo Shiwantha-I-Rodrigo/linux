@@ -253,6 +253,16 @@ and will produce errors if a referenced device is missing.
 
 `$ sudo mkfs.ext4 /dev/mapper/VOL_1-DISK_1` --> create FS
 
+`$ sudo vgextend VOL_1 /dev/sdb2` --> extend vg
+
+`$ sudo lvextend -L +1G DISK_1 VOL_1` --> extend lv
+
+`$ sudo e2fsck -f /dev/VOL_1/DISK_1` --> check before resize
+
+`$ sudo resize2fs /dev/VOL_1/DISK_1 2G` --> resize to 2G
+
+> ! ATTENTION : when reducing size, resize the **fs** before **LV**
+
 ---
 
 **RAID**

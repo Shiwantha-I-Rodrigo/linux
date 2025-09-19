@@ -1,9 +1,9 @@
 ### **Sample Files / Setup**
 
 ```
-/tmp/user_home/
+/user_home/
 └── sample_file.txt
-/tmp/project/
+/project/
 ├── report.doc
 └── logs/
     └── access.log
@@ -35,7 +35,7 @@ bob (UID 1002, group: guests)
 * Create a user `charlie` with:
 
   * Full name
-  * Home directory `/tmp/user_home/charlie`
+  * Home directory `/user_home/charlie`
   * Do **not** create home directory
   * Primary group `auditors`
   * Supplementary groups `developers,admins`
@@ -74,8 +74,8 @@ bob (UID 1002, group: guests)
 
 **Tasks:**
 
-* Change ownership of `/tmp/project/report.doc` to `charlie:auditors`
-* Recursively change group ownership of `/tmp/project/logs/` to `admins`
+* Change ownership of `/project/report.doc` to `charlie:auditors`
+* Recursively change group ownership of `/project/logs/` to `admins`
 * Set permissions numerically and symbolically
 
 ---
@@ -107,8 +107,8 @@ bob (UID 1002, group: guests)
 **Tasks:**
 
 * Switch to `charlie` and verify username
-* Edit `/tmp/project/report.doc` using `sudoedit`
-* Use `sudo` to change ownership of `/tmp/project/logs/access.log` to `alice:admins`
+* Edit `/project/report.doc` using `sudoedit`
+* Use `sudo` to change ownership of `/project/logs/access.log` to `alice:admins`
 
 ---
 
@@ -129,7 +129,7 @@ useradd -D
 # Add user charlie with full coverage of options
 sudo useradd \
   -c "Charlie Brown" \
-  -d /tmp/user_home/charlie \
+  -d /user_home/charlie \
   -M \
   -g auditors \
   -G developers,admins \
@@ -140,7 +140,7 @@ sudo useradd \
   charlie
 
 # Modify bob (home, groups, UID, login name, shell)
-sudo usermod -d /tmp/user_home/bob_new -m -G auditors -g admins -u 1100 -l bobby -s /bin/sh bob
+sudo usermod -d /user_home/bob_new -m -G auditors -g admins -u 1100 -l bobby -s /bin/sh bob
 
 # Delete group guests
 sudo groupdel guests
@@ -178,14 +178,14 @@ sudo passwd -S charlie
 
 ```bash
 # Change ownership of report.doc
-sudo chown charlie:auditors /tmp/project/report.doc
+sudo chown charlie:auditors /project/report.doc
 
 # Recursively change group ownership of logs
-sudo chgrp -R admins /tmp/project/logs/
+sudo chgrp -R admins /project/logs/
 
 # Permissions
-chmod 640 /tmp/project/report.doc       # numeric
-chmod u+rwx,g+rx,o-rwx /tmp/project/logs/  # symbolic
+chmod 640 /project/report.doc       # numeric
+chmod u+rwx,g+rx,o-rwx /project/logs/  # symbolic
 ```
 
 ---
@@ -246,10 +246,10 @@ su - charlie
 whoami
 
 # Edit file as root using sudoedit
-sudoedit /tmp/project/report.doc
+sudoedit /project/report.doc
 
 # Change ownership using sudo
-sudo chown alice:admins /tmp/project/logs/access.log
+sudo chown alice:admins /project/logs/access.log
 ```
 
 ---

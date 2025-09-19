@@ -116,14 +116,11 @@ Apr
 * Format `employees.csv` into 2-column side-by-side pages, 30 lines per page, 60 characters wide, omitting headers/footers.
 
 ---
-Perfect. Let’s bolt on a few more scenarios so every single command option and variation gets its turn on stage. I’ll continue in the same “story-task” style, with sample files reused.
-
----
 
 **11. Pattern Collector**
 
-* Use `grep` with `-f patterns.txt` to find all employees belonging to Engineering or Sales in `employees.csv`.
-* Add another pattern inline with `-e` for “HR”.
+* Use `grep` with patterns.txt to find all employees belonging to Engineering or Sales in `employees.csv`.
+* Add another pattern inline for “HR”.
 * Show line numbers, then count total matches.
 
 ---
@@ -131,7 +128,7 @@ Perfect. Let’s bolt on a few more scenarios so every single command option and
 **12. Directory Diver**
 
 * Make a copy of `employees.csv` into a subdirectory named `data/`.
-* Run `grep -r -d skip` for the string “Engineering” starting at the current directory.
+* skip directories for the string “Engineering” starting at the current directory.
 * Verify the search ignores the directory when told.
 
 ---
@@ -139,30 +136,30 @@ Perfect. Let’s bolt on a few more scenarios so every single command option and
 **13. AWK Trickery**
 
 * Create a tiny AWK program file called `fields.awk` that prints only the second and third fields from `employees.csv`.
-* Run it with `awk -F, -f fields.awk employees.csv`.
-* Then rerun, but assign a variable using `-v min=60000` so it only prints rows with salary above that value.
+* Run it for employees.csv.
+* Then rerun, but assign a variable 'min=60000` so it only prints rows with salary above that value.
 
 ---
 
 **14. Character Surgeon**
 
-* From `employees.csv`, extract only the first 10 characters of each line using `cut -c 1-10`.
-* Suppress any lines that don’t contain the delimiter `,` using `cut -s -d, -f2`.
+* From `employees.csv`, extract only the first 10 characters of each line.
+* Suppress any lines that don’t contain the delimiter `,`.
 
 ---
 
 **15. Sorting Arena**
 
-* From `employees.csv`, sort entries by Department (field 3) using `-t, -k3`.
-* Check if the result is sorted using `-c`.
-* Then resort by numeric salary (field 4) ascending, and output to `salary_sorted.txt` using `-o`.
+* From `employees.csv`, sort entries by Department (field 3).
+* Check if the result is sorted.
+* Then resort by numeric salary (field 4) ascending, and output to `salary_sorted.txt` without piping or redirecting.
 
 ---
 
 **16. Log Watcher**
 
 * Use `tail -n 3 projects.txt` to view the last three entries.
-* Then pipe those lines into `wc -w` to count total words.
+* Then pipe those lines and count total words.
 
 ---
 
@@ -176,7 +173,7 @@ Perfect. Let’s bolt on a few more scenarios so every single command option and
 **18. Tee Party**
 
 * Run a pipeline that extracts names from `employees.csv`, converts them to uppercase with `awk`, and then writes to both `names.txt` and screen.
-* Append the results a second time with `tee -a names.txt`.
+* Append the results a second time.
 
 ---
 ---

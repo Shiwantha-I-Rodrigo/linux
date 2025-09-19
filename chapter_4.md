@@ -181,6 +181,11 @@ and will continue to ask for new data, untill the "ending keyword specified" is 
 > the first example is equalent to **grep "hello" <<< "file"** where the name 'file' is the data.\
 > the second is **grep "hello" file** where file is an argument and the content of the file is the data.
 
+**Inserting arguments in the middle of a command**
+```
+$ ls | xargs -I "{}" cp {} backup/ 
+```
+
 ---
 
 ### shell expansion

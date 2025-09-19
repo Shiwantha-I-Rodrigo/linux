@@ -49,12 +49,12 @@ You’ve accidentally started `cpu_hog.sh` twice in the foreground. One you susp
 ---
 
 **Scenario 2: The Silent Logger That Won’t Quit**
-You launch `slow_logger.sh` with `nohup` so it keeps running even after logout. After some time, you forget whether it’s still around. Use `ps` in different formats (`-ef`, `aux`, and `-o pid,ppid,cmd`) to hunt it down. Once found, experiment with killing it using both `kill -s SIGTERM` and `pkill` by name.
+You launch `slow_logger.sh` in a way to keeps running even after logout. After some time, you forget whether it’s still around. Use `ps` in different formats to hunt it down. Once found, experiment with killing it using both `kill` signals and `pkill` methods.
 
 ---
 
 **Scenario 3: Net Hog vs. Sysadmin Patience**
-You’ve launched `net_hog.sh` with a low priority using `nice -n 15`. After monitoring system performance in `top` and `htop`, you decide its punishment isn’t severe enough. Crank it up with `renice`. Finally, finish it with `kill -s SIGKILL` once you’ve had enough.
+You’ve launched `net_hog.sh` with a low priority using `nice`. After monitoring system performance in `top` and `htop`, you decide its punishment isn’t severe enough. Crank it up with `renice`. Finally, finish it with `kill` **kill** signal once you’ve had enough.
 
 ---
 

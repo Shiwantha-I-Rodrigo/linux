@@ -124,6 +124,9 @@ mount -o ro disk1.img /mnt/disk1
 # Display block device attributes after mounting
 blkid
 
+# mount attribs
+cat /proc/mounts | grep -E "\bro\b"
+
 # Unmount the filesystem
 umount /mnt/disk1
 ```
@@ -279,6 +282,12 @@ vgchange -ay vg_data
 lvchange -ay /dev/vg_data/lv_main
 vgchange -an vg_data
 lvchange -an /dev/vg_data/lv_main
+
+
+e2fsck /dev/vdb1
+resize2fs /dev/vdb1
+
+xfs_growfs /mount/point -D size
 ```
 
 ---
